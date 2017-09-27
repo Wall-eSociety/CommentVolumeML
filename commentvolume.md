@@ -22,45 +22,28 @@ temporalmente em Variante 1, 2, 3, 4 e 5.
 
 Há um total de 54
 ***features***, essas features são representações para as colunas abaixo.
+
 |Número da coluna|Nome|Origem da feature|Descrição|
 |----------------|----|-----------------|---------|
-|1|Popularidade/*Likes* da
-páginaPage|*Feature* da página|Define a popularidade da página ou o suporte para
-a fonte dos documentos.|
-|2|Página Checking|*Feature* da página|Descreve quantos
-individuos diferentes visitaram a página|
-|3|Falano sobre a página|*Feature* da
-página|Define o interese diário de indivídos em relação ao conteúdo da página.
-Ou seja, pessoas que voltam ou tem alguma ação sobre a página.|
-|4|Categoria da
-página|*Feature* da página|Define a categoria da página. Ex.: lugar,
-instituição...|
-|5 - 29|Derivado|*Feature* derivada |São features que foram
-associadas a página calculando através de outras features básicas.|
-|30|CC1|*Feature* essencial|Número total de comentários antes do tempo base
-selecionado.|
-|31|CC2|*Feature* essencial|O número de comentários nas 24 horas
-atrás|            
-|32|CC3|*Feature* essencial|O número de comentários nas 48
-horas atras e 24 horas relativas ao tempo base.|
-|33|CC4|*Feature* essencial|O
-número de comentários nas primeiras 24 horas após a publicação, mas antes do
-tempo base.|
+|1|Popularidade/*Likes* da páginaPage|*Feature* da página|Define a popularidade da página ou o suporte para a fonte dos documentos.|
+|2|Página Checking|*Feature* da página|Descreve quantos individuos diferentes visitaram a página|
+|3|Falano sobre a página|*Feature* da página|Define o interese diário de indivídos em relação ao conteúdo da página. Ou seja, pessoas que voltam ou tem alguma ação sobre a página.|
+|4|Categoria da página|*Feature* da página|Define a categoria da página. Ex.: lugar, instituição...|
+|5 - 29|Derivado|*Feature* derivada |São features que foram associadas a página calculando através de outras features básicas.|
+|30|CC1|*Feature* essencial|Número total de comentários antes do tempo base selecionado.|
+|31|CC2|*Feature* essencial|O número de comentários nas 24 horas atrás|            
+|32|CC3|*Feature* essencial|O número de comentários nas 48 horas atras e 24 horas relativas ao tempo base.|
+|33|CC4|*Feature* essencial|O número de comentários nas primeiras 24 horas após a publicação, mas antes do tempo base.|
 |34|CC5|*Feature* essencial|Diferença entre CC2 e CC3.|
 |35|Tempo base|Outra *feature*|Tempo selecionado para simular o cenário.|
 |36|Tamanho do *post*|Outra *feature*|Contagem de caracteres no *post*.|
-|37|*Post* compartilhados|Outra *feature*|É a contagem de pessoas que
-compartilharam o *post* em sua linha do tempo.|
-|38|Promoção do estado do
-*Post*|Outra *feature*|Pessoas que promoveram (1) ou não (0) a página que
-apareceu na lista de novas notícias.|
-|39|H Local|Outra *feature*|Descreve o
-número de horas que passaram para o alvo de comentários recebidos.|
-|40-46|Dia da semana da publicação|Dia da semana|Representa o dia da semana que
-foi publicado o post (Domingo até Sábado).|
-|47-53|Dia do tempo base|Dia da
-semana|Representa o dia (Domingo até Sábado) que foi selecionado o tempo base.|
+|37|*Post* compartilhados|Outra *feature*|É a contagem de pessoas que compartilharam o *post* em sua linha do tempo.|
+|38|Promoção do estado do *Post*|Outra *feature*|Pessoas que promoveram (1) ou não (0) a página que apareceu na lista de novas notícias.|
+|39|H Local|Outra *feature*|Descreve o número de horas que passaram para o alvo de comentários recebidos.|
+|40-46|Dia da semana da publicação|Dia da semana|Representa o dia da semana que foi publicado o post (Domingo até Sábado).|
+|47-53|Dia do tempo base|Dia da semana|Representa o dia (Domingo até Sábado) que foi selecionado o tempo base.|
 |54|Variável alvo|Alvo|O número de comentários nas próximas H horas.|
+
 ## Obtenção dos dados
 
 Os dados estão organizados na pasta
