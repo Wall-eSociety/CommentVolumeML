@@ -1,6 +1,7 @@
 import os
+import pandas
 
-def obtain_data():
+def obtain_directories():
     # Load dirs name
     cur_dir = os.path.realpath('.')
     data_dir = os.path.join(cur_dir,'Dataset')
@@ -26,9 +27,16 @@ def obtain_data():
     list_train = sorted(list_train)
     list_test = sorted(list_test)
 
-    print(list_train)
-    print(list_test)
-
+    print("Obtaining folders...")
     return list_train, list_test
-    
-obtain_data()
+
+def obtain_data(train, test):
+    trainData = pandas.DataFrame.from_csv(train)
+    testData = pandas.DataFrame.from_csv(test)
+
+    print("Obtaining data...")
+
+    return trainData, testData
+
+trainFolders,testFolders = obtain_directories()
+trainData, testData = obtain_data(trainFolders[0],testFolders[0])
