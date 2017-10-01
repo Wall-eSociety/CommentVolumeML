@@ -131,10 +131,9 @@ list_train = sorted(list_train)
 list_test = sorted(list_test)
 ```
 
-```{.python .input}
 Tendo os paths dos arquivos em mãos podemos obter os dados. Para fazer isso
-de forma eficiente podemos utilizar a biblioteca Pandas.
-```
+de
+forma eficiente podemos utilizar a biblioteca Pandas.
 
 #### Definição das colunas
 
@@ -190,9 +189,45 @@ fruto de engenharia de caracerísticas, e que, o autor não especificou quais
 foram as operações realizadas entre elas e portanto, esta análize ajudará a
 identificar as relações entre as *features*.
 
+##### Cálculo da correlação
+
+A
+correlação entre duas variáveis é:
+
 ```{.python .input}
-testData.corr()
-testData.corr() > 0.9
+import numpy as np
+a=testData.corr()
+a
+```
+
+##### Triangulo superior
+
+Como a matriz de correlação gerada pelo dataframe é
+uma matriz espelho. Então será removido a parte inferior da matriz
+
+```{.python .input}
+a = a.abs()
+np.fill_diagonal(a.values,np.NaN)
+upper_matrix = np.triu(np.ones(a.shape)).astype(np.bool)
+
+a=a.where(upper_matrix)
+a
+```
+
+##### Apenas valores válidos
+
+A matriz de correlação acima nos trás todos os
+valores de relacionamento entre cada uma das colunas, logo, desejamos saber
+apenas quais são as colunas que possuem uma forte ligação. Usaremos a correlação
+forte como sendo > X
+
+```{.python .input}
+a=a.where(a>0.8)
+a=a.dropna(how='all', axis=(0,1))
+b=a[a.notnull()].stack().index
+for c in b:
+    print(c, a[c[1]][c[0]])
+
 ```
 
 ```{.python .input}
@@ -201,8 +236,8 @@ import matplotlib.pyplot as plt
 from matplotlib import cm as cm
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-cmap = cm.get_cmap('jet', 30)
-cax = ax1.imshow(testData.corr(), interpolation="nearest", cmap=cmap)
+cmap = cm.get_cmap('jet', 100)
+cax = ax1.imshow(a, interpolation="nearest", cmap=cmap)
 ax1.grid(True)
 
 ```
