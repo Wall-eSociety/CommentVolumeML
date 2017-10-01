@@ -2,7 +2,7 @@
 
 Trata-se de um problema de regressão descrito no
 artigo [Facebook Comments
-Volume](http://uksim.info/uksim2015/data/8713a015.pdf). 
+Volume](http://uksim.info/uksim2015/data/8713a015.pdf).
 
 O objetivo que se
 deseja alcançar nesta solução é de acordo com as informações de entrada sobre um
@@ -150,8 +150,8 @@ registros em 54 colunas.
 columns = ["Page Popularity/likes", "Page Checkinsâ€™s", "Page talking about",
            "Page Category", "Derived", "Derived", "Derived", "Derived",
            "Derived", "Derived", "Derived", "Derived", "Derived",
-           "Derived", "Derived", "Derived", "Derived", "Derived", 
-           "Derived", "Derived", "Derived", "Derived", "Derived", 
+           "Derived", "Derived", "Derived", "Derived", "Derived",
+           "Derived", "Derived", "Derived", "Derived", "Derived",
            "Derived", "Derived", "Derived", "Derived", "Derived",
            "Derived", "CC1", "CC2", "CC3", "CC4", "CC5", "Base time",
            "Post length", "Post Share Count", "Post Promotion Status", "H Local",
@@ -199,10 +199,19 @@ testData.corr() > 0.9
 %matplotlib inline
 import matplotlib.pyplot as plt
 from matplotlib import cm as cm
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-cmap = cm.get_cmap('jet', 30)
-cax = ax1.imshow(testData.corr(), interpolation="nearest", cmap=cmap)
-ax1.grid(True)
+import seaborn as sns
+
+corr = testData.corr()
+sns.set(style="white")
+mask = np.zeros_like(corr, dtype=np.bool)
+mask[np.triu_indices_from(mask)] = True
+f, ax = plt.subplots(figsize=(11, 9))
+cmap = sns.diverging_palette(220, 10, as_cmap=True)
+sns.heatmap(corr, mask=mask, cmap=cmap, vmax=.3, center=0,
+            square=True, linewidths=.5, cbar_kws={"shrink": .5},
+            yticklabels=columns,xticklabels=columns)
+plt.yticks(rotation=0)
+plt.xticks(rotation=90)
+plt.show()
 
 ```
