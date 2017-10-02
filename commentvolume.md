@@ -131,8 +131,10 @@ list_train = sorted(list_train)
 list_test = sorted(list_test)
 ```
 
-    Tendo os paths dos arquivos em mãos podemos obter os dados. Para fazer isso
+```{.python .input}
+Tendo os paths dos arquivos em mãos podemos obter os dados. Para fazer isso
 de forma eficiente podemos utilizar a biblioteca Pandas.
+```
 
 #### Definição das colunas
 
@@ -167,7 +169,7 @@ biblioteca pandas, em que passamos o local do arquivo e o nome das colunas.
 ```{.python .input}
 import pandas
 trainData = pandas.read_csv(list_train[0], names=columns)
-testData = pandas.DataFrame.from_csv(list_test[0])
+testData = pandas.read_csv(list_test[0], names=columns)
 print("Quantidade de dados de treinamento")
 print(len(trainData))
 print("Quantidade de dados de teste")
@@ -187,3 +189,20 @@ correlação entre as *features*. Visto que há um total de 24 colunas que foram
 fruto de engenharia de caracerísticas, e que, o autor não especificou quais
 foram as operações realizadas entre elas e portanto, esta análize ajudará a
 identificar as relações entre as *features*.
+
+```{.python .input}
+testData.corr()
+testData.corr() > 0.9
+```
+
+```{.python .input}
+%matplotlib inline
+import matplotlib.pyplot as plt
+from matplotlib import cm as cm
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+cmap = cm.get_cmap('jet', 30)
+cax = ax1.imshow(testData.corr(), interpolation="nearest", cmap=cmap)
+ax1.grid(True)
+
+```
