@@ -31,8 +31,19 @@ def obtain_directories():
     return list_train, list_test
 
 def obtain_data(train, test):
-    trainData = pandas.DataFrame.from_csv(train)
-    testData = pandas.DataFrame.from_csv(test)
+    columns = ["Page Popularity/likes", "Page Checkinsâ€™s", "Page talking about",
+           "Page Category", "Derived", "Derived", "Derived", "Derived",
+           "Derived", "Derived", "Derived", "Derived", "Derived",
+           "Derived", "Derived", "Derived", "Derived", "Derived",
+           "Derived", "Derived", "Derived", "Derived", "Derived",
+           "Derived", "Derived", "Derived", "Derived", "Derived",
+           "Derived", "CC1", "CC2", "CC3", "CC4", "CC5", "Base time",
+           "Post length", "Post Share Count", "Post Promotion Status", "H Local",
+           "Post Sunday", "Post Monday", "Post Tuesday", "Post Wednesday", "Post Thursday", "Post Friday", "Post Saturday",
+           "Base Sunday", "Base Monday", "Base Tuesday", "Base Wednesday", "Base Thursday", "Base Friday", "Base Saturday",
+           "Target Variable"]
+    trainData = pandas.read_csv(train, names=columns)
+    testData = pandas.read_csv(test, names=columns)
 
     print("Obtaining data...")
 
