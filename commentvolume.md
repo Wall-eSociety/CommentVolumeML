@@ -218,6 +218,7 @@ página do facebook e Y o número de curtidas que esta página possui.
 X, Y = 0, 1
 
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy.stats import linregress
 
 fig, (ax, ax2) = plt.subplots(1, 2)
@@ -260,10 +261,9 @@ Spearman avalia relações monótonas, sejam elas lineares ou não.
 Para nosso problema utilizaremos o método de pearson, pois queremos medir apenas
 o grau de correlação entre as variáveis do problema.
 
-
 ```{.python .input}
 import numpy as np
-a=testData.corr('pearson')
+a=trainData.corr('pearson')
 a
 ```
 
@@ -315,4 +315,74 @@ sns.heatmap(corr, mask=mask, cmap=cmap, vmax=.3, center=0,
 plt.yticks(rotation=0)
 plt.xticks(rotation=90)
 plt.show()
+```
+
+# Machine Learning
+
+## Facebook Comment Volume
+
+## Regression
+
+```{.python .input}
+import time
+
+# Set features and independent variables vector
+X = trainData.iloc[:, :-1].values
+y = trainData.iloc[:, -1].values
+
+print("X values and Y values ready for training!!!")
+```
+
+## Decision Tree Regression
+![](http://scikit-
+learn.org/stable/_images/sphx_glr_plot_tree_regression_001.png)
+
+```{.python .input}
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import explained_variance_score
+
+def decision_tree_regressor(X, y):
+    print("Runnning Regression Decision Tree...")
+    
+    t0 = time.time()
+    
+    regressor = DecisionTreeRegressor(random_state = 0)
+    regressor.fit(X, y)
+
+    y_predicted = regressor.predict(X)
+
+    print("Label: ", y)
+    print("Predicted: ", y_predicted)
+
+    print("Decision Tree Overall Accuracy: {0:.4f}".format(explained_variance_score(y, y_predicted)), "%")
+    
+    print("It took {0:.2f}".format(time.time() - t0),"seconds to run Decision Tree Regressor") 
+    
+decision_tree_regressor(X, y)
+```
+
+## Random Forest Regression
+
+```{.python .input}
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import explained_variance_score
+
+def random_forest_regressor(X,y):
+    t0 = time.time()
+    # n_trees = number of trees
+    n_trees = 10
+        
+    print("Runnning Random Forest with",n_trees,"Trees...")
+    regressor = RandomForestRegressor(n_estimators = n_trees, random_state = 0)
+    regressor.fit(X, y)
+    
+    y_predicted = regressor.predict(X)
+
+    print("Label: ", y)
+    print("Predicted: ", y_predicted)
+    
+    print("Random Forest Overall Accuracy: {0:.4f}".format(explained_variance_score(y, y_predicted)), "%")
+    print("It took {0:.2f}".format(time.time() - t0),"seconds to run Random Forest Regression") 
+    
+random_forest_regressor(X, y)
 ```
