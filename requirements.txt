@@ -4,3 +4,5 @@ matplotlib
 numpy
 jupyter
 notedown
+notebook==4.4
+seaborn

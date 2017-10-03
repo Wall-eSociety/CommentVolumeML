@@ -2,7 +2,7 @@
 
 Trata-se de um problema de regressão descrito no
 artigo [Facebook Comments
-Volume](http://uksim.info/uksim2015/data/8713a015.pdf). 
+Volume](http://uksim.info/uksim2015/data/8713a015.pdf).
 
 O objetivo que se
 deseja alcançar nesta solução é de acordo com as informações de entrada sobre um
@@ -40,7 +40,7 @@ associadas a página calculando através de outras features básicas.|
 |30|CC1|*Feature* essencial|Número total de comentários antes do tempo base
 selecionado.|
 |31|CC2|*Feature* essencial|O número de comentários nas 24 horas
-atrás|            
+atrás|
 |32|CC3|*Feature* essencial|O número de comentários nas 48
 horas atras e 24 horas relativas ao tempo base.|
 |33|CC4|*Feature* essencial|O
@@ -131,10 +131,9 @@ list_train = sorted(list_train)
 list_test = sorted(list_test)
 ```
 
-```{.python .input}
 Tendo os paths dos arquivos em mãos podemos obter os dados. Para fazer isso
-de forma eficiente podemos utilizar a biblioteca Pandas.
-```
+de
+forma eficiente podemos utilizar a biblioteca Pandas.
 
 #### Definição das colunas
 
@@ -150,8 +149,8 @@ registros em 54 colunas.
 columns = ["Page Popularity/likes", "Page Checkinsâ€™s", "Page talking about",
            "Page Category", "Derived", "Derived", "Derived", "Derived",
            "Derived", "Derived", "Derived", "Derived", "Derived",
-           "Derived", "Derived", "Derived", "Derived", "Derived", 
-           "Derived", "Derived", "Derived", "Derived", "Derived", 
+           "Derived", "Derived", "Derived", "Derived", "Derived",
+           "Derived", "Derived", "Derived", "Derived", "Derived",
            "Derived", "Derived", "Derived", "Derived", "Derived",
            "Derived", "CC1", "CC2", "CC3", "CC4", "CC5", "Base time",
            "Post length", "Post Share Count", "Post Promotion Status", "H Local",
@@ -190,19 +189,130 @@ fruto de engenharia de caracerísticas, e que, o autor não especificou quais
 foram as operações realizadas entre elas e portanto, esta análize ajudará a
 identificar as relações entre as *features*.
 
+##### O que é
+
+A correlação entre duas variáveis é quando existe algum laço matemático que
+envolve o valor de duas variáveis de alguma forma ([ESTATÍSTICA II - CORRELAÇÃO
+E REGRESSÃO](http://www.ctec.ufal.br/professor/mgn/05CorrelacaoERegressao.pdf)).
+
+Uma das maneiras mais simples de se identificar a correlação entre duas
+variáveis é plotando-as em um gráfico, para tentar identificar alguma relação
+entre elas.
+
+Suponha os seguintes dados: X representa o número de visitas totais em uma
+página do facebook e Y o número de curtidas que esta página possui.
+
+|Visitas|Curtidas|
+|-------|--------|
+|25000|5000|
+|1000|95|
+|10000|1500|
+|12000|1900|
+|20005|3700|
+|5000|1200|
+|3000|600|
+|15000|3000|
+
 ```{.python .input}
-testData.corr()
-testData.corr() > 0.9
+%matplotlib inline
+X, Y = 0, 1
+
+import matplotlib.pyplot as plt
+from scipy.stats import linregress
+
+fig, (ax, ax2) = plt.subplots(1, 2)
+data = np.array([[25000,1000,10000,12000,20005, 5000, 3000, 15000], [5000,95,1500,1900,3700, 1200, 600, 3000]])
+
+ax.plot(data[X], data[Y], '.')
+
+# Calcula regressão linear para a*m + b
+m, b, R, p, SEm = linregress(data[X], data[Y])
+m,b,R,p,SEm
+x2 = np.array([0, data[X].max()])
+ax.plot(x2, m * x2 + b)
+ax.set_title('linear')
+
+# Dato não linear, relação de raiz quadrada
+ax2.set_title('não-linear')
+data[Y] = data[X]**(1/2)
+chart = ax2.plot(data[X], data[Y], 'o')
+
+```
+
+Com o gráfico, fica bastante claro a correlação das variáveis X e Y do exemplo.
+E inclusive o tipo de correlação não-linear.
+
+#### Tipos de correlação
+
+Existem vários métodos para calculo do coeficiente de correlação entre duas
+variáveis, pearson, kendall e spearman.
+* [Pearson](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_de
+_Pearson): mede o grau da correlação (e a direcção dessa correlação - se
+positiva ou negativa) entre duas variáveis de escala métrica (intervalar ou de
+rácio/razão).
+* [Kendall](https://pt.wikipedia.org/wiki/Coeficiente_de_correla%C3%A7%C3%A3o_ta
+u_de_Kendall): medir a correlação de postos entre duas quantidades medidas.
+* [Spearman](): A correlação de Spearman entre duas variáveis é igual à
+correlação de Pearson entre os valores de postos daquelas duas variáveis.
+Enquanto a correlação de Pearson avalia relações lineares, a correlação de
+Spearman avalia relações monótonas, sejam elas lineares ou não.
+
+Para nosso problema utilizaremos o método de pearson, pois queremos medir apenas
+o grau de correlação entre as variáveis do problema.
+
+
+```{.python .input}
+import numpy as np
+a=testData.corr('pearson')
+a
+```
+
+##### Triangulo superior
+
+Como a matriz de correlação gerada pelo dataframe é
+uma matriz espelho. Então será removido a parte inferior da matriz
+
+```{.python .input}
+a = a.abs()
+np.fill_diagonal(a.values,np.NaN)
+upper_matrix = np.triu(np.ones(a.shape)).astype(np.bool)
+
+a=a.where(upper_matrix)
+a
+```
+
+##### Apenas valores válidos
+
+A matriz de correlação acima nos trás todos os
+valores de relacionamento entre cada uma das colunas, logo, desejamos saber
+apenas quais são as colunas que possuem uma forte ligação. Usaremos a correlação
+forte como sendo > X
+
+```{.python .input}
+a=a.where(a>0.95)
+a=a.dropna(how='all', axis=(0,1))
+b=a[a.notnull()].stack().index
+for c in b:
+    print(c, a[c[1]][c[0]])
+
 ```
 
 ```{.python .input}
 %matplotlib inline
 import matplotlib.pyplot as plt
 from matplotlib import cm as cm
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-cmap = cm.get_cmap('jet', 30)
-cax = ax1.imshow(testData.corr(), interpolation="nearest", cmap=cmap)
-ax1.grid(True)
+import seaborn as sns
 
+corr = testData.corr()
+sns.set(style="white")
+mask = np.zeros_like(corr, dtype=np.bool)
+mask[np.triu_indices_from(mask)] = True
+f, ax = plt.subplots(figsize=(11, 9))
+cmap = sns.diverging_palette(220, 10, as_cmap=True)
+sns.heatmap(corr, mask=mask, cmap=cmap, vmax=.3, center=0,
+            square=True, linewidths=.5, cbar_kws={"shrink": .5},
+            yticklabels=columns,xticklabels=columns)
+plt.yticks(rotation=0)
+plt.xticks(rotation=90)
+plt.show()
 ```
