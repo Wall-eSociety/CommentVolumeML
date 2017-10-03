@@ -95,7 +95,7 @@ encontram os arquivos. Para isso usaremos o import os (ou Operating system) e
 como a extenção dos arquivos é .csv, será utilizada a biblioteca
 [pandas](http://pandas.pydata.org/).
 
-```{.python .input}
+```python
 import os
 # Load dirs name
 cur_dir = os.path.realpath('.')
@@ -114,7 +114,7 @@ os arquivos do tipo csv para teste e treinamento. Ao final iremos ordenar a
 lista para podemos acessar o arquivos que queremos pelo indice, ja que não
 necessáriamente ele vai ler em ordem alfabetica.
 
-```{.python .input}
+```python
 list_train = []
 list_test = []
 # Obtain train files
@@ -145,7 +145,7 @@ Portanto, é esperado que, caso o pandas leia corretamente, tenham
 40949
 registros em 54 colunas.
 
-```{.python .input}
+```python
 columns = ["Page Popularity/likes", "Page Checkinsâ€™s", "Page talking about",
            "Page Category", "Derived", "Derived", "Derived", "Derived",
            "Derived", "Derived", "Derived", "Derived", "Derived",
@@ -165,7 +165,7 @@ print(len(columns), columns)
 Agora, faremos a leitura dos dados com o suporte da
 biblioteca pandas, em que passamos o local do arquivo e o nome das colunas.
 
-```{.python .input}
+```python
 import pandas
 trainData = pandas.read_csv(list_train[0], names=columns)
 testData = pandas.read_csv(list_test[0], names=columns)
@@ -213,7 +213,7 @@ página do facebook e Y o número de curtidas que esta página possui.
 |3000|600|
 |15000|3000|
 
-```{.python .input}
+```python
 %matplotlib inline
 X, Y = 0, 1
 
@@ -261,7 +261,7 @@ Spearman avalia relações monótonas, sejam elas lineares ou não.
 Para nosso problema utilizaremos o método de pearson, pois queremos medir apenas
 o grau de correlação entre as variáveis do problema.
 
-```{.python .input}
+```python
 import numpy as np
 a=trainData.corr('pearson')
 a
@@ -272,7 +272,7 @@ a
 Como a matriz de correlação gerada pelo dataframe é
 uma matriz espelho. Então será removido a parte inferior da matriz
 
-```{.python .input}
+```python
 a = a.abs()
 np.fill_diagonal(a.values,np.NaN)
 upper_matrix = np.triu(np.ones(a.shape)).astype(np.bool)
@@ -288,7 +288,7 @@ valores de relacionamento entre cada uma das colunas, logo, desejamos saber
 apenas quais são as colunas que possuem uma forte ligação. Usaremos a correlação
 forte como sendo > X
 
-```{.python .input}
+```python
 a=a.where(a>0.95)
 a=a.dropna(how='all', axis=(0,1))
 b=a[a.notnull()].stack().index
@@ -297,7 +297,7 @@ for c in b:
 
 ```
 
-```{.python .input}
+```python
 %matplotlib inline
 import matplotlib.pyplot as plt
 from matplotlib import cm as cm
@@ -323,66 +323,69 @@ plt.show()
 
 ## Regression
 
-```{.python .input}
+```python
 import time
 
 # Set features and independent variables vector
-X = trainData.iloc[:, :-1].values
-y = trainData.iloc[:, -1].values
+X_train = trainData.iloc[:, :-1].values
+y_train = trainData.iloc[:, -1].values
 
-print("X values and Y values ready for training!!!")
+X_test = testData.iloc[:, :-1].values
+y_test = testData.iloc[:, -1].values
+
+print("X values and Y values ready for training and testing!!!")
 ```
 
 ## Decision Tree Regression
 ![](http://scikit-
 learn.org/stable/_images/sphx_glr_plot_tree_regression_001.png)
 
-```{.python .input}
+```python
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import explained_variance_score
 
-def decision_tree_regressor(X, y):
+def decision_tree_regressor(X_train, y_train, X_test, y_test):
     print("Runnning Regression Decision Tree...")
     
     t0 = time.time()
     
     regressor = DecisionTreeRegressor(random_state = 0)
-    regressor.fit(X, y)
+    regressor.fit(X_train, y_train)
 
-    y_predicted = regressor.predict(X)
+    y_predicted = regressor.predict(X_test)
 
-    print("Label: ", y)
-    print("Predicted: ", y_predicted)
+    print("Test Label: ", y_test)
+    print("Predicted Label: ", y_predicted)
 
-    print("Decision Tree Overall Accuracy: {0:.4f}".format(explained_variance_score(y, y_predicted)), "%")
+    print("Decision Tree Overall Accuracy: {0:.2f}".format(explained_variance_score(y_test, y_predicted) * 100), "%")
     
     print("It took {0:.2f}".format(time.time() - t0),"seconds to run Decision Tree Regressor") 
     
-decision_tree_regressor(X, y)
+decision_tree_regressor(X_train, y_train, X_test, y_test)
 ```
 
 ## Random Forest Regression
 
-```{.python .input}
+```python
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import explained_variance_score
 
-def random_forest_regressor(X,y):
+def random_forest_regressor(X_train, y_train, X_test, y_test):
     t0 = time.time()
     # n_trees = number of trees
     n_trees = 10
         
     print("Runnning Random Forest with",n_trees,"Trees...")
     regressor = RandomForestRegressor(n_estimators = n_trees, random_state = 0)
-    regressor.fit(X, y)
+    regressor.fit(X_train, y_train)
     
-    y_predicted = regressor.predict(X)
+    y_predicted = regressor.predict(X_test)
 
-    print("Label: ", y)
-    print("Predicted: ", y_predicted)
+    print("Test Label: ", y_test)
+    print("Predicted Label: ", y_predicted)
     
-    print("Random Forest Overall Accuracy: {0:.4f}".format(explained_variance_score(y, y_predicted)), "%")
+    print("Random Forest Overall Accuracy: {0:.2f}".format(explained_variance_score(y_test, y_predicted) * 100), "%")
     print("It took {0:.2f}".format(time.time() - t0),"seconds to run Random Forest Regression") 
     
-random_forest_regressor(X, y)
+random_forest_regressor(X_train, y_train, X_test, y_test)
 ```
