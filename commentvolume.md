@@ -321,7 +321,16 @@ plt.show()
 
 ## Facebook Comment Volume
 
-## Regression
+Para o dado problema, foi feito um levantamento dos modelos a serem utilizados para a proposta de solução. Os modelos selecionados forma baseados na literatura de artigos, nos quais foram feitos estudos sobre a mesma massa de dados, ou semelhantes, que está sendo trabalhada neste problema. Com base nos artigos [Kamaljot](https://archive.ics.uci.edu/ml/datasets/Facebook+Comment+Volume+Dataset) e [Kamaljot, Ranjeet](http://uksim.info/uksim2015/data/8713a015.pdf), ambos tratam o problema utilizando modelos de regressão supervisionado. Em ambos os artigos, o modelo no qual foi retratado como melhor desempenho para a solução, foi o *Decision Tree*.
+
+Os modelos selecionados para testes neste problema foram:
+* Decision tree
+* Random Forest
+* KNM
+
+## Tratamento da Base de dados
+
+Tratamento para a base de testes e treino. 
 
 ```python
 import time
@@ -337,8 +346,10 @@ print("X values and Y values ready for training and testing!!!")
 ```
 
 ## Decision Tree Regression
-![](http://scikit-
-learn.org/stable/_images/sphx_glr_plot_tree_regression_001.png)
+
+Uma árvore de regressão é idêntica a uma árvore de decisão porque também é formada por um conjunto de nós de decisão, perguntas, mas o resultado, em vez de uma categoria, é um escalar. As mesmas são boas candidatas, pois elas capturam iterações complexas nos dados.
+
+Para o estudo foi feito os testes do modelo utilizando oa parêmetros *default* da árvore. sendo esse encontrardo neste [link](http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html#sklearn.tree.DecisionTreeRegressor) 
 
 ```python
 from sklearn.tree import DecisionTreeRegressor
@@ -365,6 +376,10 @@ decision_tree_regressor(X_train, y_train, X_test, y_test)
 ```
 
 ## Random Forest Regression
+
+É um meta-estimador que se adapta a uma série de árvores de decisão de classificação em várias sub-amostras do conjunto de dados e utiliza a média para melhorar a precisão preditiva e controlar a sobreposição. 
+
+O modelo tem como parâmetro livre a seleção da quantidade de árvores de decisão.
 
 ```python
 from sklearn.ensemble import RandomForestRegressor
