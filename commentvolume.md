@@ -321,7 +321,15 @@ plt.show()
 
 ## Facebook Comment Volume
 
-Para o dado problema, foi feito um levantamento dos modelos a serem utilizados para a proposta de solução. Os modelos selecionados forma baseados na literatura de artigos, nos quais foram feitos estudos sobre a mesma massa de dados, ou semelhantes, que está sendo trabalhada neste problema. Com base nos artigos [Kamaljot](https://archive.ics.uci.edu/ml/datasets/Facebook+Comment+Volume+Dataset) e [Kamaljot, Ranjeet](http://uksim.info/uksim2015/data/8713a015.pdf), ambos tratam o problema utilizando modelos de regressão supervisionado. Em ambos os artigos, o modelo no qual foi retratado como melhor desempenho para a solução, foi o *Decision Tree*.
+Para o dado problema, foi feito um levantamento dos modelos a serem utilizados
+para a proposta de solução. Os modelos selecionados forma baseados na literatura
+de artigos, nos quais foram feitos estudos sobre a mesma massa de dados, ou
+semelhantes, que está sendo trabalhada neste problema. Com base nos artigos [Kam
+aljot](https://archive.ics.uci.edu/ml/datasets/Facebook+Comment+Volume+Dataset)
+e [Kamaljot, Ranjeet](http://uksim.info/uksim2015/data/8713a015.pdf), ambos
+tratam o problema utilizando modelos de regressão supervisionado. Em ambos os
+artigos, o modelo no qual foi retratado como melhor desempenho para a solução,
+foi o *Decision Tree*.
 
 Os modelos selecionados para testes neste problema foram:
 * Decision tree
@@ -330,10 +338,12 @@ Os modelos selecionados para testes neste problema foram:
 
 ## Tratamento da Base de dados
 
-Tratamento para a base de testes e treino. 
+Tratamento para a base de testes e treino.
 
 ```python
 import time
+from sklearn.metrics import r2_score
+from sklearn.metrics import mean_squared_error
 
 # Set features and independent variables vector
 X_train = trainData.iloc[:, :-1].values
@@ -347,60 +357,64 @@ print("X values and Y values ready for training and testing!!!")
 
 ## Decision Tree Regression
 
-Uma árvore de regressão é idêntica a uma árvore de decisão porque também é formada por um conjunto de nós de decisão, perguntas, mas o resultado, em vez de uma categoria, é um escalar. As mesmas são boas candidatas, pois elas capturam iterações complexas nos dados.
+Uma árvore de regressão é idêntica a uma árvore de decisão porque também é
+formada por um conjunto de nós de decisão, perguntas, mas o resultado, em vez de
+uma categoria, é um escalar. As mesmas são boas candidatas, pois elas capturam
+iterações complexas nos dados.
 
-Para o estudo foi feito os testes do modelo utilizando oa parêmetros *default* da árvore. sendo esse encontrardo neste [link](http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html#sklearn.tree.DecisionTreeRegressor) 
+Para o estudo foi feito os testes do modelo utilizando oa parêmetros *default*
+da árvore. sendo esse encontrardo neste [link](http://scikit-learn.org/stable/mo
+dules/generated/sklearn.tree.DecisionTreeRegressor.html#sklearn.tree.DecisionTre
+eRegressor)
 
 ```python
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.metrics import explained_variance_score
 
 def decision_tree_regressor(X_train, y_train, X_test, y_test):
-    print("Runnning Regression Decision Tree...")
-    
     t0 = time.time()
+    
+    print("Runnning Regression Decision Tree...")
     
     regressor = DecisionTreeRegressor(random_state = 0)
     regressor.fit(X_train, y_train)
-
-    y_predicted = regressor.predict(X_test)
-
-    print("Test Label: ", y_test)
-    print("Predicted Label: ", y_predicted)
-
-    print("Decision Tree Overall Accuracy: {0:.2f}".format(explained_variance_score(y_test, y_predicted) * 100), "%")
     
-    print("It took {0:.2f}".format(time.time() - t0),"seconds to run Decision Tree Regressor") 
+    y_train_pred = regressor.predict(X_train)
+    y_test_pred = regressor.predict(X_test)
+    
+    print("R² Score: %.3f, test: %.3f" % (r2_score(y_train, y_train_pred), r2_score(y_test, y_test_pred)))
+    
+    print("Mean Squared Error Score: %.2f" % (mean_squared_error(y_test, y_test_pred)))
+    print("It took %.2f" % (time.time() - t0), "seconds to run Decision Tree Regression")
     
 decision_tree_regressor(X_train, y_train, X_test, y_test)
 ```
 
 ## Random Forest Regression
 
-É um meta-estimador que se adapta a uma série de árvores de decisão de classificação em várias sub-amostras do conjunto de dados e utiliza a média para melhorar a precisão preditiva e controlar a sobreposição. 
+É um meta-estimador que se adapta a uma série de árvores de decisão de
+classificação em várias sub-amostras do conjunto de dados e utiliza a média para
+melhorar a precisão preditiva e controlar a sobreposição.
 
 O modelo tem como parâmetro livre a seleção da quantidade de árvores de decisão.
 
 ```python
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import explained_variance_score
 
 def random_forest_regressor(X_train, y_train, X_test, y_test):
     t0 = time.time()
-    # n_trees = number of trees
-    n_trees = 10
-        
+    n_trees = 1000
     print("Runnning Random Forest with",n_trees,"Trees...")
-    regressor = RandomForestRegressor(n_estimators = n_trees, random_state = 0)
+    
+    regressor = RandomForestRegressor(n_estimators=n_trees, random_state=1, n_jobs=-1)
     regressor.fit(X_train, y_train)
     
-    y_predicted = regressor.predict(X_test)
-
-    print("Test Label: ", y_test)
-    print("Predicted Label: ", y_predicted)
+    y_train_pred = regressor.predict(X_train)
+    y_test_pred = regressor.predict(X_test)
     
-    print("Random Forest Overall Accuracy: {0:.2f}".format(explained_variance_score(y_test, y_predicted) * 100), "%")
-    print("It took {0:.2f}".format(time.time() - t0),"seconds to run Random Forest Regression") 
+    print("R² Score: %.3f, test: %.3f" % (r2_score(y_train, y_train_pred), r2_score(y_test, y_test_pred)))
+    
+    print("Mean Squared Error Score: %.2f" % (mean_squared_error(y_test, y_test_pred)))
+    print("It took %.2f" % (time.time() - t0), "seconds to run Random Forest Regression")
     
 random_forest_regressor(X_train, y_train, X_test, y_test)
 ```
