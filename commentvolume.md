@@ -129,6 +129,9 @@ for x in os.listdir(test_dir):
 # Sorting array to access the required ones
 list_train = sorted(list_train)
 list_test = sorted(list_test)
+
+print("Train List: ", list_train)
+print("Test List: ", list_test)
 ```
 
 Tendo os paths dos arquivos em mãos podemos obter os dados. Para fazer isso
@@ -169,6 +172,8 @@ biblioteca pandas, em que passamos o local do arquivo e o nome das colunas.
 import pandas
 trainData = pandas.read_csv(list_train[0], names=columns)
 testData = pandas.read_csv(list_test[0], names=columns)
+print('Train file: ', list_train[0])
+print('Test file: ', list_test[0])
 print("Quantidade de dados de treinamento")
 print(len(trainData))
 print("Quantidade de dados de teste")
@@ -375,11 +380,42 @@ def decision_tree_regressor(X_train, y_train, X_test, y_test):
     
     print("Runnning Regression Decision Tree...")
     
-    regressor = DecisionTreeRegressor(random_state = 0)
+    regressor = DecisionTreeRegressor(max_depth=100)
     regressor.fit(X_train, y_train)
     
     y_train_pred = regressor.predict(X_train)
     y_test_pred = regressor.predict(X_test)
+    
+    plt.scatter(y_train,  
+                y_train_pred, 
+                c='green', 
+                marker='v', 
+                s=30,
+                alpha=0.7,
+                label='Test with Trained Data')
+    plt.xlim(1, 1400)
+    plt.xlabel('Predicted Label')
+    plt.ylabel('Real Label')
+    plt.legend(loc='upper left')
+    plt.plot([1,1400],[1,1400], color='red', linestyle='-', linewidth=2)
+    plt.tight_layout()
+    plt.show()
+    
+    plt.scatter(y_test,  
+                y_test_pred, 
+                c='darkorange', 
+                marker='s', 
+                s=30,
+                alpha=0.8,
+                label='Test with Test Data')
+    plt.xlim(1, 1400)
+    plt.xlabel('Predicted Label')
+    plt.ylabel('Real Label')
+    plt.legend(loc='upper left')
+    plt.plot([1,1400],[1,1400], color='red', linestyle='-', linewidth=2)
+    plt.tight_layout()
+    plt.show()
+    
     
     print("R² Score: %.3f, test: %.3f" % (r2_score(y_train, y_train_pred), r2_score(y_test, y_test_pred)))
     
@@ -402,7 +438,7 @@ from sklearn.ensemble import RandomForestRegressor
 
 def random_forest_regressor(X_train, y_train, X_test, y_test):
     t0 = time.time()
-    n_trees = 1000
+    n_trees = 30
     print("Runnning Random Forest with",n_trees,"Trees...")
     
     regressor = RandomForestRegressor(n_estimators=n_trees, random_state=1, n_jobs=-1)
@@ -411,7 +447,39 @@ def random_forest_regressor(X_train, y_train, X_test, y_test):
     y_train_pred = regressor.predict(X_train)
     y_test_pred = regressor.predict(X_test)
     
-    print("R² Score: %.3f, test: %.3f" % (r2_score(y_train, y_train_pred), r2_score(y_test, y_test_pred)))
+    
+    plt.scatter(y_train,  
+                y_train_pred, 
+                c='green', 
+                marker='v', 
+                s=30,
+                alpha=0.7,
+                label='Test with Trained Data')
+    plt.xlim(1, 1400)
+    plt.xlabel('Predicted Label')
+    plt.ylabel('Real Label')
+    plt.legend(loc='upper left')
+    plt.plot([1,1400],[1,1400], color='red', linestyle='-', linewidth=2)
+    plt.tight_layout()
+    plt.show()
+    
+    plt.scatter(y_test,  
+                y_test_pred, 
+                c='darkorange', 
+                marker='s', 
+                s=30,
+                alpha=0.8,
+                label='Test with Test Data')
+    plt.xlim(1, 1400)
+    plt.xlabel('Predicted Label')
+    plt.ylabel('Real Label')
+    plt.legend(loc='upper left')
+    plt.plot([1,1400],[1,1400], color='red', linestyle='-', linewidth=2)
+    plt.tight_layout()
+    plt.show()
+    
+    
+    print("R² Score on train base: %.3f, test: %.3f" % (r2_score(y_train, y_train_pred), r2_score(y_test, y_test_pred)))
     
     print("Mean Squared Error Score: %.2f" % (mean_squared_error(y_test, y_test_pred)))
     print("It took %.2f" % (time.time() - t0), "seconds to run Random Forest Regression")
