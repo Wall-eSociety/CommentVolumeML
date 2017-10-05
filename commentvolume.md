@@ -95,7 +95,7 @@ encontram os arquivos. Para isso usaremos o import os (ou Operating system) e
 como a extenção dos arquivos é .csv, será utilizada a biblioteca
 [pandas](http://pandas.pydata.org/).
 
-```{.python .input}
+```python
 import os
 # Load dirs name
 cur_dir = os.path.realpath('.')
@@ -114,7 +114,7 @@ os arquivos do tipo csv para teste e treinamento. Ao final iremos ordenar a
 lista para podemos acessar o arquivos que queremos pelo indice, ja que não
 necessáriamente ele vai ler em ordem alfabetica.
 
-```{.python .input}
+```python
 list_train = []
 list_test = []
 # Obtain train files
@@ -145,7 +145,7 @@ Portanto, é esperado que, caso o pandas leia corretamente, tenham
 40949
 registros em 54 colunas.
 
-```{.python .input}
+```python
 columns = ["Page Popularity/likes", "Page Checkinsâ€™s", "Page talking about",
            "Page Category", "Derived", "Derived", "Derived", "Derived",
            "Derived", "Derived", "Derived", "Derived", "Derived",
@@ -165,7 +165,7 @@ print(len(columns), columns)
 Agora, faremos a leitura dos dados com o suporte da
 biblioteca pandas, em que passamos o local do arquivo e o nome das colunas.
 
-```{.python .input}
+```python
 import pandas
 trainData = pandas.read_csv(list_train[0], names=columns)
 testData = pandas.read_csv(list_test[0], names=columns)
@@ -213,7 +213,7 @@ página do facebook e Y o número de curtidas que esta página possui.
 |3000|600|
 |15000|3000|
 
-```{.python .input}
+```python
 %matplotlib inline
 X, Y = 0, 1
 
@@ -261,7 +261,7 @@ Spearman avalia relações monótonas, sejam elas lineares ou não.
 Para nosso problema utilizaremos o método de pearson, pois queremos medir apenas
 o grau de correlação entre as variáveis do problema.
 
-```{.python .input}
+```python
 import numpy as np
 a=trainData.corr('pearson')
 a
@@ -272,7 +272,7 @@ a
 Como a matriz de correlação gerada pelo dataframe é
 uma matriz espelho. Então será removido a parte inferior da matriz
 
-```{.python .input}
+```python
 a = a.abs()
 np.fill_diagonal(a.values,np.NaN)
 upper_matrix = np.triu(np.ones(a.shape)).astype(np.bool)
@@ -288,7 +288,7 @@ valores de relacionamento entre cada uma das colunas, logo, desejamos saber
 apenas quais são as colunas que possuem uma forte ligação. Usaremos a correlação
 forte como sendo > X
 
-```{.python .input}
+```python
 a=a.where(a>0.95)
 a=a.dropna(how='all', axis=(0,1))
 b=a[a.notnull()].stack().index
@@ -297,7 +297,7 @@ for c in b:
 
 ```
 
-```{.python .input}
+```python
 %matplotlib inline
 import matplotlib.pyplot as plt
 from matplotlib import cm as cm
@@ -323,7 +323,7 @@ plt.show()
 
 ## Regression
 
-```{.python .input}
+```python
 import time
 
 # Set features and independent variables vector
@@ -337,7 +337,7 @@ print("X values and Y values ready for training!!!")
 ![](http://scikit-
 learn.org/stable/_images/sphx_glr_plot_tree_regression_001.png)
 
-```{.python .input}
+```python
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import explained_variance_score
 
@@ -363,7 +363,7 @@ decision_tree_regressor(X, y)
 
 ## Random Forest Regression
 
-```{.python .input}
+```python
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import explained_variance_score
 
@@ -385,4 +385,31 @@ def random_forest_regressor(X,y):
     print("It took {0:.2f}".format(time.time() - t0),"seconds to run Random Forest Regression") 
     
 random_forest_regressor(X, y)
+```
+
+```python
+from sklearn import linear_model
+from sklearn.metrics import mean_squared_error, r2_score
+# Create linear regression object
+linearRegression = linear_model.LinearRegression()
+
+# Train the model using the training sets
+
+X = trainData.iloc[:, :-1].values
+y = trainData.iloc[:, -1].values
+
+linearRegression.fit(X, y)
+predicted = linearRegression.predict(X)
+print("Score: ",linearRegression.score(X, y))
+
+# Plot outputs
+fig, ax = plt.subplots()
+ax.scatter(y, predicted, edgecolors=(0, 0, 0))
+ax.plot([y.min(), y.max()], [predicted.min(), predicted.max()], 'k--', lw=4)
+ax.set_xlabel('Measured')
+ax.set_ylabel('Predicted')
+#plt.show()
+#x = plt.figure()
+#a = x.add_subplot(111)
+#a.plot(y, predicted, '.')
 ```
