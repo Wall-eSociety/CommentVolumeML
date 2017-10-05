@@ -2,7 +2,7 @@
 
 Trata-se de um problema de regressão descrito no
 artigo [Facebook Comments
-Volume](http://uksim.info/uksim2015/data/8713a015.pdf). 
+Volume](http://uksim.info/uksim2015/data/8713a015.pdf).
 
 O objetivo que se
 deseja alcançar nesta solução é de acordo com as informações de entrada sobre um
@@ -40,7 +40,7 @@ associadas a página calculando através de outras features básicas.|
 |30|CC1|*Feature* essencial|Número total de comentários antes do tempo base
 selecionado.|
 |31|CC2|*Feature* essencial|O número de comentários nas 24 horas
-atrás|            
+atrás|
 |32|CC3|*Feature* essencial|O número de comentários nas 48
 horas atras e 24 horas relativas ao tempo base.|
 |33|CC4|*Feature* essencial|O
@@ -95,7 +95,7 @@ encontram os arquivos. Para isso usaremos o import os (ou Operating system) e
 como a extenção dos arquivos é .csv, será utilizada a biblioteca
 [pandas](http://pandas.pydata.org/).
 
-```{.python .input}
+```python
 import os
 # Load dirs name
 cur_dir = os.path.realpath('.')
@@ -114,7 +114,7 @@ os arquivos do tipo csv para teste e treinamento. Ao final iremos ordenar a
 lista para podemos acessar o arquivos que queremos pelo indice, ja que não
 necessáriamente ele vai ler em ordem alfabetica.
 
-```{.python .input}
+```python
 list_train = []
 list_test = []
 # Obtain train files
@@ -131,9 +131,9 @@ list_train = sorted(list_train)
 list_test = sorted(list_test)
 ```
 
-```{.python .input}
-Tendo os paths dos arquivos em mãos podemos obter os dados. Para fazer isso
-de forma eficiente podemos utilizar a biblioteca Pandas.
+```python
+#Tendo os paths dos arquivos em mãos podemos obter os dados. Para fazer isso
+#de forma eficiente podemos utilizar a biblioteca Pandas.
 ```
 
 #### Definição das colunas
@@ -146,7 +146,7 @@ Portanto, é esperado que, caso o pandas leia corretamente, tenham
 40949
 registros em 54 colunas.
 
-```{.python .input}
+```python
 columns = ["Page Popularity/likes", "Page Checkinsâ€™s", "Page talking about",
            "Page Category", "Derived", "Derived", "Derived", "Derived",
            "Derived", "Derived", "Derived", "Derived", "Derived",
@@ -166,7 +166,7 @@ print(len(columns), columns)
 Agora, faremos a leitura dos dados com o suporte da
 biblioteca pandas, em que passamos o local do arquivo e o nome das colunas.
 
-```{.python .input}
+```python
 import pandas
 trainData = pandas.read_csv(list_train[0], names=columns)
 testData = pandas.read_csv(list_test[0], names=columns)
@@ -190,12 +190,12 @@ fruto de engenharia de caracerísticas, e que, o autor não especificou quais
 foram as operações realizadas entre elas e portanto, esta análize ajudará a
 identificar as relações entre as *features*.
 
-```{.python .input}
+```python
 testData.corr()
 testData.corr() > 0.9
 ```
 
-```{.python .input}
+```python
 %matplotlib inline
 import matplotlib.pyplot as plt
 from matplotlib import cm as cm
@@ -205,4 +205,75 @@ cmap = cm.get_cmap('jet', 30)
 cax = ax1.imshow(testData.corr(), interpolation="nearest", cmap=cmap)
 ax1.grid(True)
 
+```
+
+```python
+y=trainData["Target Variable"]
+yy = trainData["Page Popularity/likes"] / 100000000
+x = plt.figure()
+a = x.add_subplot(111)
+a.plot(y, yy, '.')
+```
+
+```python
+from sklearn import linear_model
+# Create linear regression object
+linearRegression = linear_model.LinearRegression()
+
+# Train the model using the training sets
+
+trainDataFeatures = trainData.iloc[:, :-1]
+trainDataTarget = trainData['Target Variable']
+
+linearRegression.fit(trainData, trainDataTarget)
+
+```
+
+```python
+
+# Make predictions using the testing set
+
+predicted = linearRegression.predict(testData)
+linearRegression.score(testData, predicted)
+```
+
+```python
+from sklearn.metrics import mean_squared_error, r2_score
+# The coefficients
+print('Coefficients: \n', linearRegression.coef_)
+# The mean squared error
+#print("Mean squared error: %.2f" % mean_squared_error(testData, predicted))
+# Explained variance score: 1 is perfect prediction
+#print('Variance score: %.2f' % r2_score(testData, predicted))
+```
+
+```python
+print(len(testData))
+print(len(testData))
+print(len(predicted))
+```
+
+```python
+# Plot outputs
+fig, ax = plt.subplots()
+ax.scatter(testData, predicted, edgecolors=(0, 0, 0))
+ax.plot([testData.min(), testData.max()], [predicted.min(), predicted.max()], 'k--', lw=4)
+ax.set_xlabel('Measured')
+ax.set_ylabel('Predicted')
+#plt.show()
+```
+
+```python
+#print(testData_X.min())
+```
+
+```python
+
+predicted = cross_val_predict(lr, yy, y, cv=10)
+fig, ax = plt.subplots()
+ax.scatter(y, predicted, edgecolors=(0, 0, 0))
+ax.plot([y.min(), y.max()], [yy.min(), y.max()], 'k--', lw=4)
+ax.set_xlabel('Measured')
+ax.set_ylabel('Predicted')
+plt.show()
 ```
