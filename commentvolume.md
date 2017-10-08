@@ -103,7 +103,7 @@ data_dir = os.path.join(cur_dir,'Dataset')
 # Obtaining directories
 train_dir = os.path.join(data_dir,'Training')
 print(train_dir)
-test_dir = os.path.join(data_dir,'Testing')
+test_dir = os.path.join(data_dir,'Testing', 'TestSet')
 print(test_dir)
 ```
 
@@ -227,7 +227,7 @@ import numpy as np
 from scipy.stats import linregress
 
 fig, (ax, ax2) = plt.subplots(1, 2)
-data = np.array([[25000,1000,10000,12000,20005, 5000, 3000, 15000], [5000,95,1500,1900,3700, 1200, 600, 3000]])
+data = np.array([[25000,1000,10000,12000,20005, 5000, 3000, 15000, 250000, 100000 ], [5000,95,1500,1900,3700, 1200, 600, 3000, 50000, 20000]])
 
 ax.plot(data[X], data[Y], '.')
 
@@ -240,7 +240,7 @@ ax.set_title('linear')
 
 # Dato não linear, relação de raiz quadrada
 ax2.set_title('não-linear')
-data[Y] = data[X]**(1/2)
+data[Y] = data[X]**(1/6)
 chart = ax2.plot(data[X], data[Y], 'o')
 
 ```
@@ -269,7 +269,7 @@ o grau de correlação entre as variáveis do problema.
 ```python
 import numpy as np
 a=trainData.corr('pearson')
-a
+a.head()
 ```
 
 ##### Triangulo superior
@@ -283,7 +283,7 @@ np.fill_diagonal(a.values,np.NaN)
 upper_matrix = np.triu(np.ones(a.shape)).astype(np.bool)
 
 a=a.where(upper_matrix)
-a
+a.head()
 ```
 
 ##### Apenas valores válidos
@@ -347,6 +347,48 @@ repetido **k** vezes sempre excluindo 1 subconjunto diferente para cada iteraç�
 ([Cross-Validation](http://docs.aws.amazon.com/machine-learning/latest/dg/cross-
 validation.html)).
 
+#### R²
+
+O [R²](http://leg.ufpr.br/~silvia/CE003/node76.html) é chamado de coeficiente de
+determinação. Ele é uma variável que é explicada pela variabilidade de outras
+variáveis, conhecido como quadrado do coeficiente de correlação de Pearson, ou
+seja, ele indica o quanto da variação total está relacionada aos valores
+analisados em pares.
+
+Os valores de R² variam entre -infinito e 1, pois são determinados pela fórmula:
+
+\begin{equation*}
+R^2 = \left( 1 - \frac{(Variação explicada de Y)}{(Variação total de Y)}\right)
+\end{equation*}
+
+É possível que a variação total seja próxima e 0 e a variação explicada de Y
+seja grande, fazendo com que gere valores negativos.
+\begin{equation*}
+Variação total de Y  =  \sum_{k=0}^n (Y_i - \bar{Y})^2
+\end{equation*}
+\begin{equation*}
+Variação total de Y  =  \sum_{k=0}^n (Y_i - F_i)^2
+\end{equation*}
+
+```python
+%%time
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
+from sklearn.tree import DecisionTreeRegressor
+
+
+y_test, x_test = testData.loc[:, 'Target Variable'], testData.drop('Target Variable', 1)
+Y, X = trainData.loc[:, 'Target Variable'], trainData.drop('Target Variable', 1) 
+
+regressor = DecisionTreeRegressor()
+
+regressor.fit(X, Y)
+y = regressor.predict(x_test)
+
+score = cross_val_score(regressor, X, Y, scoring='neg_mean_squared_error')
+print(regressor.score(X, Y), regressor.score(x_test, y_test))
+```
+
 #### Média quadrática do erro
 
 A [média quadrática do erro](http://www.statisticshowto.com/mean-squared-error/)
@@ -361,25 +403,8 @@ correlação.
 
 ```python
 %%time
-from sklearn.model_selection import train_test_split
-from sklearn.cross_validation import cross_val_score
-from sklearn.tree import DecisionTreeRegressor
 
-regressor = DecisionTreeRegressor()
-
-y_test, x_test = testData.loc[:, 'Target Variable'], testData.drop('Target Variable', 1)
-Y, X = trainData.loc[:, 'Target Variable'], trainData.drop('Target Variable', 1) 
-
-regressor.fit(X, Y)
-y = regressor.predict(x_test)
-
-score = cross_val_score(regressor, X, Y, scoring='neg_mean_squared_error')
-```
-
-```python
-%%time
 filteredData = pandas.read_csv(list_train[2], names=columns)
-
 
 drop_columns = ['Target Variable', 'Derived.15', 'Derived.16', 'Derived.3', 'Derived.7',
                 'Derived.12', 'Derived.17', 'Derived.18', 'Derived.19', 'Derived.24',
@@ -388,24 +413,61 @@ drop_columns = ['Target Variable', 'Derived.15', 'Derived.16', 'Derived.3', 'Der
 YY, XX = filteredData.loc[:, 'Target Variable'], filteredData.drop(drop_columns, 1)
 y_test, x_test = testData.loc[:, 'Target Variable'], testData.drop(drop_columns, 1)
 
+regressor = DecisionTreeRegressor()
+
 filteredScore = cross_val_score(regressor, XX, YY, scoring='neg_mean_squared_error')
 regressor.fit(XX,YY)
 yy = regressor.predict(x_test)
+print(regressor.score(XX, YY), regressor.score(x_test, y_test))
 ```
+
+#### Normalização
+
+Normalize samples individually to unit norm.
+Each sample (i.e. each row of the data matrix) with at least one non zero
+component is rescaled independently of other samples so that its norm (l1 or l2)
+equals one.
+
+
+```python
+%%time
+from sklearn.preprocessing import Normalizer
+
+XXX, YYY = Normalizer().fit_transform(trainData.drop('Target Variable', 1)), trainData.loc[:, 'Target Variable']
+y_test, x_test = testData.loc[:, 'Target Variable'], testData.drop('Target Variable', 1)
+regressor = DecisionTreeRegressor()
+
+normalizedScore = cross_val_score(regressor, XXX, YYY, scoring='neg_mean_squared_error')
+regressor.fit(XXX, YYY)
+yyy = regressor.predict(x_test)
+print(regressor.score(XXX, YYY), regressor.score(x_test, y_test))
+```
+
+#### Resultados
+
+Obervou-se que com a remoção das colunas dependentes, não houve grandes
+melhorias na performance do modelo Regression tree. A seguir é apresentada uma
+métrica diferente para esta análise o mean squared error.
 
 ```python
 main_score = "Score: {} +- {}".format(score.mean(), score.std())
 main_filtered = "Score: {} +- {}".format(filteredScore.mean(), filteredScore.std())
-main_score, main_filtered
+main_normalized = "Score: {} +- {}".format(normalizedScore.mean(), normalizedScore.std())
+
+main_score, main_filtered, main_normalized
 ```
 
-```python
-regressor.score(x_test,y_test)
-```
+Na plotagem do gráfico a baixo, é visível que não se concretizou uma linha
+quando se faz a plotagem em relação ao dado predito e o dado real.
 
 ```python
-plt.scatter(y_test, y, c='green', marker='o', s=10, alpha=0.5, label='Test with Trained Data')
-plt.scatter(y_test, yy, c='blue', marker='v', s=10, alpha=0.5, label='Filtered data')
+max_value = max(y_test.max(), y.max(), yy.max(), yyy.max())
+min_value = min(y_test.min(), y.min(), yy.min(), yyy.min())
+plt.scatter(y_test, y, c='green', marker='o', s=10, alpha=0.8, label='Test with Trained Data')
+plt.scatter(y_test, yy, c='blue', marker='v', s=10, alpha=0.8, label='Filtered data')
+plt.scatter(y_test, yyy, c='red', marker='*', s=10, alpha=0.8, label='Filtered data')
+plt.plot([min_value, max_value], [min_value, max_value], color='red', linestyle='-', linewidth=2)
+
 plt.tight_layout()
 plt.show()
 ```
