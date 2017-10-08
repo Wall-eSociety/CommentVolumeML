@@ -360,6 +360,40 @@ y_test = testData.iloc[:, -1].values
 print("X values and Y values ready for training and testing!!!")
 ```
 
+```python
+def plot_graphs(y_train, y_train_pred, y_test, y_test_pred):
+    xy_min = 0
+    xy_max = 1500
+
+    f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=(15, 5))
+    
+    ax1.scatter(y_train, y_train_pred, c='blue', marker='o', s=50, alpha=0.7, label='Test with Trained Data')
+    ax1.set_title('Prediction on Train set')
+    ax1.set_xlim([xy_min, xy_max])
+    ax1.set_ylim([xy_min, xy_max])
+    ax1.plot([xy_min, xy_max], [xy_min, xy_max], color='red', linestyle='-', linewidth=2)
+    
+    ax2.scatter(y_test, y_test_pred, c='darkorange', marker='o', s=50, alpha=0.8, label='Test with Test Data')
+    ax2.set_title('Prediction on Test set')
+    ax2.set_xlim([xy_min, xy_max])
+    ax2.set_ylim([xy_min, xy_max])
+    ax2.plot([xy_min, xy_max], [xy_min, xy_max], color='red', linestyle='-', linewidth=2)
+    plt.tight_layout()
+    plt.show()
+    
+    plt.figure(figsize=(15, 5))
+    plt.scatter(y_train_pred, y_train - y_train_pred, c='black', marker='o', s=75, alpha=0.7, label='Training data')
+    plt.scatter(y_test_pred, y_test - y_test_pred, c='lightgreen', marker='s', s=75, alpha=0.7, label='Test data')
+    plt.xlabel('Predicted values', fontsize=18)
+    plt.ylabel('Residuals', fontsize=18)
+    plt.legend(loc='upper right')
+    plt.plot([0, 1250],[0, 0], color='red', linestyle='-', linewidth=2)
+    plt.xlim([-20, 1250])
+    plt.ylim([-1000, 1500])
+    plt.tight_layout()
+    plt.show()
+```
+
 ## Decision Tree Regression
 
 Uma árvore de regressão é idêntica a uma árvore de decisão porque também é
@@ -379,29 +413,13 @@ def decision_tree_regressor(X_train, y_train, X_test, y_test):
     t0 = time.time()
     print("Runnning Regression Decision Tree...")
 
-    
     regressor = DecisionTreeRegressor(max_depth=100)
     regressor.fit(X_train, y_train)
     
     y_train_pred = regressor.predict(X_train)
     y_test_pred = regressor.predict(X_test)
     
-    f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=(15, 5))
-    
-    ax1.scatter(y_train, y_train_pred, c='blue', marker='o', s=30, alpha=0.7, label='Test with Trained Data')
-    ax1.set_title('Prediction on Train set')
-    ax1.set_xlim([0, 1500])
-    ax1.set_ylim([0, 1500])
-    ax1.plot([1,1500],[1,1500], color='red', linestyle='-', linewidth=2)
-    plt.tight_layout()
-    
-    ax2.scatter(y_test, y_test_pred, c='darkorange', marker='s', s=30, alpha=0.8,label='Test with Test Data')
-    ax2.set_title('Prediction on Test set')
-    ax2.set_xlim([0, 1500])
-    ax2.set_ylim([0, 1500])
-    ax2.plot([1,1500],[1,1500], color='red', linestyle='-', linewidth=2)
-    plt.tight_layout()
-    plt.show()
+    plot_graphs(y_train, y_train_pred, y_test, y_test_pred)
     
     print("R² Score, on Training set: %.3f, on Testing set: %.3f" % (r2_score(y_train, y_train_pred), r2_score(y_test, y_test_pred)))
     print("Mean Squared Error Score on Testing set: %.2f" % (mean_squared_error(y_test, y_test_pred)))
@@ -432,36 +450,11 @@ def random_forest_regressor(X_train, y_train, X_test, y_test):
     y_train_pred = regressor.predict(X_train)
     y_test_pred = regressor.predict(X_test)   
     
-    f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=(15, 5))
-    
-    ax1.scatter(y_train, y_train_pred, c='blue', marker='v', s=30, alpha=0.7, label='Test with Trained Data')
-    ax1.set_title('Prediction on Train set')
-    ax1.set_xlim([0, 1500])
-    ax1.set_ylim([0, 1500])
-    ax1.plot([1,1500],[1,1500], color='red', linestyle='-', linewidth=2)
-    
-    ax2.scatter(y_test, y_test_pred, c='darkorange', marker='s', s=30, alpha=0.8, label='Test with Test Data')
-    ax2.set_title('Prediction on Test set')
-    ax2.set_xlim([0, 1500])
-    ax2.set_ylim([0, 1500])
-    ax2.plot([1,1500],[1,1500], color='red', linestyle='-', linewidth=2)
-    plt.tight_layout()
-    plt.show()
-    
-    plt.scatter(y_train_pred, y_train - y_train_pred, c='black', marker='o', s=35, alpha=0.5, label='Training data')
-    plt.scatter(y_test_pred, y_test - y_test_pred, c='lightgreen', marker='s', s=35, alpha=0.7, label='Test data')
-    plt.xlabel('Predicted values')
-    plt.ylabel('Residuals')
-    plt.legend(loc='upper left')
-    plt.plot([0, 1200],[0, 0], color='red', linestyle='-', linewidth=2)
-    plt.xlim([-20, 1250])
-    plt.ylim([-1000, 1500])
-    plt.tight_layout()
-    plt.show()
+    plot_graphs(y_train, y_train_pred, y_test, y_test_pred)
     
     print("R² Score, on Training set: %.3f, on Testing set: %.3f" % (r2_score(y_train, y_train_pred), r2_score(y_test, y_test_pred)))
     print("Mean Squared Error Score on Testing set: %.2f" % (mean_squared_error(y_test, y_test_pred)))
-    print("It took %.2f" % (time.time() - t0), "seconds to run Random Forest Regression")
+    print("It took %.2f" % (time.time() - t0), "seconds to run Random Forest Regression with", n_trees, "trees")
     
 random_forest_regressor(X_train, y_train, X_test, y_test)
 ```
