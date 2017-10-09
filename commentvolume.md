@@ -227,7 +227,7 @@ import numpy as np
 from scipy.stats import linregress
 
 fig, (ax, ax2) = plt.subplots(1, 2)
-data = np.array([[25000,1000,10000,12000,20005, 5000, 3000, 15000], [5000,95,1500,1900,3700, 1200, 600, 3000]])
+data = np.array([[25000,1000,10000,12000,20005, 5000, 3000, 15000, 250000, 100000 ], [5000,95,1500,1900,3700, 1200, 600, 3000, 50000, 20000]])
 
 ax.plot(data[X], data[Y], '.')
 
@@ -240,7 +240,7 @@ ax.set_title('linear')
 
 # Dato não linear, relação de raiz quadrada
 ax2.set_title('não-linear')
-data[Y] = data[X]**(1/2)
+data[Y] = data[X]**(1/6)
 chart = ax2.plot(data[X], data[Y], 'o')
 
 ```
@@ -269,7 +269,7 @@ o grau de correlação entre as variáveis do problema.
 ```python
 import numpy as np
 a=trainData.corr('pearson')
-a
+a.head()
 ```
 
 ##### Triangulo superior
@@ -283,7 +283,7 @@ np.fill_diagonal(a.values,np.NaN)
 upper_matrix = np.triu(np.ones(a.shape)).astype(np.bool)
 
 a=a.where(upper_matrix)
-a
+a.head()
 ```
 
 ##### Apenas valores válidos
@@ -347,28 +347,40 @@ repetido **k** vezes sempre excluindo 1 subconjunto diferente para cada iteraç�
 ([Cross-Validation](http://docs.aws.amazon.com/machine-learning/latest/dg/cross-
 validation.html)).
 
-#### Média quadrática do erro
+#### R²
 
-A [média quadrática do erro](http://www.statisticshowto.com/mean-squared-error/)
-é uma métrica para modelos de regressão que indica o quanto os pontos estão se
-distânciando da reta traçada. A distância é a medida de **erro** da linha e o
-quadrado é útil para obter os valores positivos e amplifica (adiciona maior
-peso) para quando o ponto se distância bastante.
+O [R²](http://leg.ufpr.br/~silvia/CE003/node76.html) é chamado de coeficiente de
+determinação. Ele é uma variável que é explicada pela variabilidade de outras
+variáveis, conhecido como quadrado do coeficiente de correlação de Pearson, ou
+seja, ele indica o quanto da variação total está relacionada aos valores
+analisados em pares.
 
-Nesta seção, ele será utilizado para determinar o quanto o modelo de regressão
-melhorou ou piorou após aplicar a remoção das colunas que possuem forte
-correlação.
+Os valores de R² variam entre -infinito e 1, pois são determinados pela fórmula:
+
+\begin{equation*}
+R^2 = \left( 1 - \frac{(Variação explicada de Y)}{(Variação total de Y)}\right)
+\end{equation*}
+
+É possível que a variação total seja próxima e 0 e a variação explicada de Y
+seja grande, fazendo com que gere valores negativos.
+\begin{equation*}
+Variação total de Y  =  \sum_{k=0}^n (Y_i - \bar{Y})^2
+\end{equation*}
+\begin{equation*}
+Variação total de Y  =  \sum_{k=0}^n (Y_i - F_i)^2
+\end{equation*}
 
 ```python
 %%time
 from sklearn.model_selection import train_test_split
-from sklearn.cross_validation import cross_val_score
+from sklearn.model_selection import cross_val_score
 from sklearn.tree import DecisionTreeRegressor
 
-regressor = DecisionTreeRegressor()
 
 y_test, x_test = testData.loc[:, 'Target Variable'], testData.drop('Target Variable', 1)
-Y, X = trainData.loc[:, 'Target Variable'], trainData.drop('Target Variable', 1) 
+Y, X = trainData.loc[:, 'Target Variable'], trainData.drop('Target Variable', 1)
+
+regressor = DecisionTreeRegressor()
 
 regressor.fit(X, Y)
 y = regressor.predict(x_test)
@@ -381,8 +393,8 @@ print(score)
 %%time
 from sklearn.model_selection import GridSearchCV
 
-tree_parameters = [{'max_depth': [30, 35, 40], 
-                    'max_features': [40, 46, 52], 
+tree_parameters = [{'max_depth': [30, 35, 40],
+                    'max_features': [40, 46, 52],
                     'min_samples_leaf': [25, 30, 35]}]
 # BEST SCORE: 469.696918012 {'min_samples_leaf': 30, 'max_depth': 35, 'max_features': 46}
 
@@ -397,10 +409,22 @@ grid_search = grid_search.fit(X_train, y_train)
 print(grid_search.best_score_ * -1, grid_search.best_params_)
 ```
 
+#### Média quadrática do erro
+
+A [média quadrática do erro](http://www.statisticshowto.com/mean-squared-error/)
+é uma métrica para modelos de regressão que indica o quanto os pontos estão se
+distânciando da reta traçada. A distância é a medida de **erro** da linha e o
+quadrado é útil para obter os valores positivos e amplifica (adiciona maior
+peso) para quando o ponto se distância bastante.
+
+Nesta seção, ele será utilizado para determinar o quanto o modelo de regressão
+melhorou ou piorou após aplicar a remoção das colunas que possuem forte
+correlação.
+
 ```python
 %%time
-filteredData = pandas.read_csv(list_train[2], names=columns)
 
+filteredData = pandas.read_csv(list_train[2], names=columns)
 
 drop_columns = ['Target Variable', 'Derived.15', 'Derived.16', 'Derived.3', 'Derived.7',
                 'Derived.12', 'Derived.17', 'Derived.18', 'Derived.19', 'Derived.24',
@@ -409,24 +433,61 @@ drop_columns = ['Target Variable', 'Derived.15', 'Derived.16', 'Derived.3', 'Der
 YY, XX = filteredData.loc[:, 'Target Variable'], filteredData.drop(drop_columns, 1)
 y_test, x_test = testData.loc[:, 'Target Variable'], testData.drop(drop_columns, 1)
 
+regressor = DecisionTreeRegressor()
+
 filteredScore = cross_val_score(regressor, XX, YY, scoring='neg_mean_squared_error')
 regressor.fit(XX,YY)
 yy = regressor.predict(x_test)
+print(regressor.score(XX, YY), regressor.score(x_test, y_test))
 ```
+
+#### Normalização
+
+Normalize samples individually to unit norm.
+Each sample (i.e. each row of the data matrix) with at least one non zero
+component is rescaled independently of other samples so that its norm (l1 or l2)
+equals one.
+
+
+```python
+%%time
+from sklearn.preprocessing import Normalizer
+
+XXX, YYY = Normalizer().fit_transform(trainData.drop('Target Variable', 1)), trainData.loc[:, 'Target Variable']
+y_test, x_test = testData.loc[:, 'Target Variable'], testData.drop('Target Variable', 1)
+regressor = DecisionTreeRegressor()
+
+normalizedScore = cross_val_score(regressor, XXX, YYY, scoring='neg_mean_squared_error')
+regressor.fit(XXX, YYY)
+yyy = regressor.predict(x_test)
+print(regressor.score(XXX, YYY), regressor.score(x_test, y_test))
+```
+
+#### Resultados
+
+Obervou-se que com a remoção das colunas dependentes, não houve grandes
+melhorias na performance do modelo Regression tree. A seguir é apresentada uma
+métrica diferente para esta análise o mean squared error.
 
 ```python
 main_score = "Score: {} +- {}".format(score.mean(), score.std())
 main_filtered = "Score: {} +- {}".format(filteredScore.mean(), filteredScore.std())
-main_score, main_filtered
+main_normalized = "Score: {} +- {}".format(normalizedScore.mean(), normalizedScore.std())
+
+main_score, main_filtered, main_normalized
 ```
 
-```python
-regressor.score(x_test,y_test)
-```
+Na plotagem do gráfico a baixo, é visível que não se concretizou uma linha
+quando se faz a plotagem em relação ao dado predito e o dado real.
 
 ```python
-plt.scatter(y_test, y, c='green', marker='o', s=10, alpha=0.5, label='Test with Trained Data')
-plt.scatter(y_test, yy, c='blue', marker='v', s=10, alpha=0.5, label='Filtered data')
+max_value = max(y_test.max(), y.max(), yy.max(), yyy.max())
+min_value = min(y_test.min(), y.min(), yy.min(), yyy.min())
+plt.scatter(y_test, y, c='green', marker='o', s=10, alpha=0.8, label='Test with Trained Data')
+plt.scatter(y_test, yy, c='blue', marker='v', s=10, alpha=0.8, label='Filtered data')
+plt.scatter(y_test, yyy, c='red', marker='*', s=10, alpha=0.8, label='Filtered data')
+plt.plot([min_value, max_value], [min_value, max_value], color='red', linestyle='-', linewidth=2)
+
 plt.tight_layout()
 plt.show()
 ```
@@ -490,13 +551,13 @@ def plot_graphs(y_train, y_train_pred, y_test, y_test_pred):
     xy_max = 1500
 
     f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=(15, 5))
-    
+
     ax1.scatter(y_train, y_train_pred, c='blue', marker='o', s=50, alpha=0.7, label='Test with Trained Data')
     ax1.set_title('Prediction on Train set')
     ax1.set_xlim([xy_min, xy_max])
     ax1.set_ylim([xy_min, xy_max])
     ax1.plot([xy_min, xy_max], [xy_min, xy_max], color='red', linestyle='-', linewidth=2)
-    
+
     ax2.scatter(y_test, y_test_pred, c='darkorange', marker='o', s=50, alpha=0.8, label='Test with Test Data')
     ax2.set_title('Prediction on Test set')
     ax2.set_xlim([xy_min, xy_max])
@@ -504,7 +565,7 @@ def plot_graphs(y_train, y_train_pred, y_test, y_test_pred):
     ax2.plot([xy_min, xy_max], [xy_min, xy_max], color='red', linestyle='-', linewidth=2)
     plt.tight_layout()
     plt.show()
-    
+
     plt.figure(figsize=(15, 5))
     plt.scatter(y_train_pred, y_train - y_train_pred, c='black', marker='o', s=75, alpha=0.7, label='Training data')
     plt.scatter(y_test_pred, y_test - y_test_pred, c='lightgreen', marker='s', s=75, alpha=0.7, label='Test data')
@@ -547,15 +608,15 @@ def decision_tree_regressor(X_train, y_train, X_test, y_test):
 
     regressor = DecisionTreeRegressor(min_samples_leaf=30, max_depth= 35, max_features= 42)
     regressor.fit(X_train, y_train)
-    
+
     y_train_pred = regressor.predict(X_train)
     y_test_pred = regressor.predict(X_test)
-    
+
     plot_graphs(y_train, y_train_pred, y_test, y_test_pred)
-    
+
     print("R² Score, on Training set: %.3f, on Testing set: %.3f" % (r2_score(y_train, y_train_pred), r2_score(y_test, y_test_pred)))
     print("Mean Squared Error Score on Testing set: %.2f" % (mean_squared_error(y_test, y_test_pred)))
-    
+
 decision_tree_regressor(X_train, y_train, X_test, y_test)
 ```
 
@@ -574,17 +635,68 @@ from sklearn.ensemble import RandomForestRegressor
 def random_forest_regressor(X_train, y_train, X_test, y_test):
     n_trees = 50
     print("Runnning Random Forest with",n_trees,"Trees...")
-    
+
     regressor = RandomForestRegressor(n_estimators=n_trees, min_samples_leaf=30, max_depth= 35, max_features= 42, n_jobs=-1)
     regressor.fit(X_train, y_train)
-    
+
     y_train_pred = regressor.predict(X_train)
     y_test_pred = regressor.predict(X_test)   
-    
+
     plot_graphs(y_train, y_train_pred, y_test, y_test_pred)
-    
+
     print("R² Score, on Training set: %.3f, on Testing set: %.3f" % (r2_score(y_train, y_train_pred), r2_score(y_test, y_test_pred)))
     print("Mean Squared Error Score on Testing set: %.2f" % (mean_squared_error(y_test, y_test_pred)))
-    
+
 random_forest_regressor(X_train, y_train, X_test, y_test)
+```
+
+## Algoritmo K-nearest neighbors
+
+No reconhecimento de padrões o algoritmo KNN é um método não para-métrico usado para classificação e regressão. Nos dois casos, o input consiste nos k exemplos de treinamento mais proximos no espaço de amostragem. O output depende se o Knn é usado para classificação ou regressão.
+KNN é um tipo de aprendizado baseado em instâncias, onde a função é aproximada apenas localmente e toda a computação é deferida até a classificação.
+
+```python
+import pandas as pd
+import numpy
+
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.model_selection import train_test_split
+
+import math
+%matplotlib inline
+import matplotlib.pyplot as plt
+```
+
+```python
+def idealK(x,target,y,target2):
+    K = 1
+    ab = 0
+    vetScore = []
+    for i in range(200):
+        knn = KNeighborsRegressor(n_neighbors=K)
+        knn.fit(x,target)
+        score = knn.score(y,target2)
+        vetScore.append(score)
+        if score > ab:
+            ab = score
+            d = K
+        K += 2
+    return d,vetScore
+D = numpy.arange(1, 400, 2)
+K,score = idealK(X_train, y_train, X_test, y_test)
+print("ideal K: ",K)
+plt.plot(D,score)
+```
+
+```python
+def regressionKnn(x,target,y,target2):
+    knn = KNeighborsRegressor(n_neighbors=5)
+    knn.fit(x,target)
+    vetPredict = knn.predict(y)  
+    D = numpy.arange(0,81312)
+    P = list(target2)
+    plt.plot(D,p)
+    plt.plot(D,vetPredict)
+
+regressionKnn(X_train, y_train, X_test, y_test)
 ```
