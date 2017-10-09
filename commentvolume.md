@@ -429,6 +429,21 @@ Os modelos selecionados para testes neste problema foram:
 * Random Forest
 * KNM
 
+Para avaliação dos modelo, foi coletado o valor da pontuação do mesmo utilizando
+duas métricas comrparativas, para validar a seleção do modelos com relação a sua
+performance sobre a base de dados:
+* [R2](http://scikit-
+learn.org/stable/modules/generated/sklearn.metrics.r2_score.html), métrica na
+qual é mais uma é utilizada para determinar a pontuação de um modelo de
+regressão, seu melhor resultado é dado pela nota "1" e podendo ser negativ, pois
+o modelo pode ser arbitrariamente pior.
+* [MSE](http://scikit-learn.org/stable/modules/model_evaluation.html#median-
+absolute-error), métrica utilizada para para avaliar o modelo sendo o valor
+esperado da perda de erro ao quadrado ou perda quadrática. A diferença ocorre
+devido à aleatoriedade ou porque o estimador não contabiliza informações que
+possam produzir uma estimativa mais precisa, sendo necessário no caso para
+validar o resultado da métrica anterior.
+
 ## Tratamento da Base de dados
 
 Tratamento para a base de testes e treino.
@@ -482,6 +497,14 @@ def plot_graphs(y_train, y_train_pred, y_test, y_test_pred):
     plt.show()
 ```
 
+## Representação gráfica
+
+Para reO gráfico demonstra os testes do modelo utilizando as bases distintas do
+nosso dataset, sendo os testes na base de treino, gŕafico à esquerda e os testes
+na base de teste, gráfico a direita. Abaixo temos a representação dos testes no
+modelo, onde é representado os dados residuais, nos quais alguns dos valores
+ficaram distantes a função do modelo.
+
 ## Decision Tree Regression
 
 Uma árvore de regressão é idêntica a uma árvore de decisão porque também é
@@ -493,6 +516,7 @@ Para o estudo foi feito os testes do modelo utilizando oa parêmetros *default*
 da árvore. sendo esse encontrardo neste [link](http://scikit-learn.org/stable/mo
 dules/generated/sklearn.tree.DecisionTreeRegressor.html#sklearn.tree.DecisionTre
 eRegressor)
+
 
 ```python
 from sklearn.tree import DecisionTreeRegressor
