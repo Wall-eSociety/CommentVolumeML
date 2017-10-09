@@ -103,7 +103,7 @@ data_dir = os.path.join(cur_dir,'Dataset')
 # Obtaining directories
 train_dir = os.path.join(data_dir,'Training')
 print(train_dir)
-test_dir = os.path.join(data_dir,'Testing')
+test_dir = os.path.join(data_dir,'Testing', 'TestSet')
 print(test_dir)
 ```
 
@@ -170,9 +170,9 @@ biblioteca pandas, em que passamos o local do arquivo e o nome das colunas.
 
 ```python
 import pandas
-trainData = pandas.read_csv(list_train[0], names=columns)
-testData = pandas.read_csv(list_test[0], names=columns)
-print('Train file: ', list_train[0])
+trainData = pandas.read_csv(list_train[4], names=columns)
+testData = pandas.read_csv(list_test[1], names=columns)
+print('Train file: ', list_train[4])
 print('Test file: ', list_test[0])
 print("Quantidade de dados de treinamento")
 print(len(trainData))
@@ -373,7 +373,28 @@ Y, X = trainData.loc[:, 'Target Variable'], trainData.drop('Target Variable', 1)
 regressor.fit(X, Y)
 y = regressor.predict(x_test)
 
-score = cross_val_score(regressor, X, Y, scoring='neg_mean_squared_error')
+score = cross_val_score(regressor, X, Y, scoring='neg_mean_squared_error', cv = 10)
+print(score)
+```
+
+```python
+%%time
+from sklearn.model_selection import GridSearchCV
+
+tree_parameters = [{'max_depth': [30, 35, 40], 
+                    'max_features': [40, 46, 52], 
+                    'min_samples_leaf': [25, 30, 35]}]
+# BEST SCORE: 469.696918012 {'min_samples_leaf': 30, 'max_depth': 35, 'max_features': 46}
+
+# Get best parameters for Decision Tree Regressor
+grid_search = GridSearchCV(estimator= regressor,
+                          param_grid = tree_parameters,
+                          scoring = 'neg_mean_squared_error',
+                          cv = 10,
+                          n_jobs = -1)
+
+grid_search = grid_search.fit(X_train, y_train)
+print(grid_search.best_score_ * -1, grid_search.best_params_)
 ```
 
 ```python
@@ -449,7 +470,6 @@ validar o resultado da métrica anterior.
 Tratamento para a base de testes e treino.
 
 ```python
-import time
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
 
@@ -464,6 +484,7 @@ print("X values and Y values ready for training and testing!!!")
 ```
 
 ```python
+%%time
 def plot_graphs(y_train, y_train_pred, y_test, y_test_pred):
     xy_min = 0
     xy_max = 1500
@@ -517,15 +538,14 @@ da árvore. sendo esse encontrardo neste [link](http://scikit-learn.org/stable/m
 dules/generated/sklearn.tree.DecisionTreeRegressor.html#sklearn.tree.DecisionTre
 eRegressor)
 
-
 ```python
+%%time
 from sklearn.tree import DecisionTreeRegressor
 
 def decision_tree_regressor(X_train, y_train, X_test, y_test):
-    t0 = time.time()
     print("Runnning Regression Decision Tree...")
 
-    regressor = DecisionTreeRegressor(max_depth=100)
+    regressor = DecisionTreeRegressor(min_samples_leaf=30, max_depth= 35, max_features= 42)
     regressor.fit(X_train, y_train)
     
     y_train_pred = regressor.predict(X_train)
@@ -535,7 +555,6 @@ def decision_tree_regressor(X_train, y_train, X_test, y_test):
     
     print("R² Score, on Training set: %.3f, on Testing set: %.3f" % (r2_score(y_train, y_train_pred), r2_score(y_test, y_test_pred)))
     print("Mean Squared Error Score on Testing set: %.2f" % (mean_squared_error(y_test, y_test_pred)))
-    print("It took %.2f" % (time.time() - t0), "seconds to run Decision Tree Regression")
     
 decision_tree_regressor(X_train, y_train, X_test, y_test)
 ```
@@ -549,14 +568,14 @@ melhorar a precisão preditiva e controlar a sobreposição.
 O modelo tem como parâmetro livre a seleção da quantidade de árvores de decisão.
 
 ```python
+%%time
 from sklearn.ensemble import RandomForestRegressor
 
 def random_forest_regressor(X_train, y_train, X_test, y_test):
-    t0 = time.time()
-    n_trees = 20
+    n_trees = 50
     print("Runnning Random Forest with",n_trees,"Trees...")
     
-    regressor = RandomForestRegressor(n_estimators=n_trees, random_state=1, n_jobs=-1)
+    regressor = RandomForestRegressor(n_estimators=n_trees, min_samples_leaf=30, max_depth= 35, max_features= 42, n_jobs=-1)
     regressor.fit(X_train, y_train)
     
     y_train_pred = regressor.predict(X_train)
@@ -566,7 +585,6 @@ def random_forest_regressor(X_train, y_train, X_test, y_test):
     
     print("R² Score, on Training set: %.3f, on Testing set: %.3f" % (r2_score(y_train, y_train_pred), r2_score(y_test, y_test_pred)))
     print("Mean Squared Error Score on Testing set: %.2f" % (mean_squared_error(y_test, y_test_pred)))
-    print("It took %.2f" % (time.time() - t0), "seconds to run Random Forest Regression with", n_trees, "trees")
     
 random_forest_regressor(X_train, y_train, X_test, y_test)
 ```
