@@ -385,6 +385,7 @@ Variação total de Y  =  \sum_{k=0}^n (Y_i - F_i)^2
 
 #### Média quadrática do erro
 
+
 A [média quadrática do erro](http://www.statisticshowto.com/mean-squared-error/)
 é uma métrica para modelos de regressão que indica o quanto os pontos estão se
 distânciando da reta traçada. A distância é a medida de **erro** da linha e o
@@ -616,7 +617,7 @@ def decision_tree_regressor(X_train, y_train, X_test, y_test):
 
     print("R² Score, on Training set: %.3f, on Testing set: %.3f" % (r2_score(y_train, y_train_pred), r2_score(y_test, y_test_pred)))
     print("Mean Squared Error Score on Testing set: %.2f" % (mean_squared_error(y_test, y_test_pred)))
-    
+
 decision_tree_regressor(X_train, y_train, X_test, y_test)
 ```
 
@@ -650,54 +651,45 @@ def random_forest_regressor(X_train, y_train, X_test, y_test):
 random_forest = random_forest_regressor(X_train, y_train, X_test, y_test)
 ```
 
-## Algoritmo K-nearest neighbors
+# K Ideal
+Na maioria dos algoritmos de machine learning, o K no KNN é um hiperparametro que deve ser escolhido para que o melhor resultado possível possa ser encontrado em um conjunto de dados. O K pode ser interpretado como o controlador do formato do limite de decisão do algoritmo.
 
-No reconhecimento de padrões o algoritmo KNN é um método não para-métrico usado
-para classificação e regressão. Nos dois casos, o input consiste nos k exemplos
-de treinamento mais proximos no espaço de amostragem. O output depende se o Knn
-é usado para classificação ou regressão.
-KNN é um tipo de aprendizado baseado em instâncias, onde a função é aproximada
-apenas localmente e toda a computação é deferida até a classificação.
+Exemplificando, quando o K é pequeno, a região de uma suposta predição é restringida e força o classificador a focar menos na distribuição geral. Um valor menor de 5 fornece a combinação mais flexivel, o que vai gerar um desequilibrio menor mas uma variancia maior.
+
 
 ```python
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.model_selection import train_test_split
-
-import math
-
+import numpy
 def idealK(x,target,y,target2):
-    K = 1
-    ab = 0
-    vetScore = []
-    for i in range(100):
-        knn = KNeighborsRegressor(n_neighbors=K)
-        knn.fit(x,target)
-        score = knn.score(y,target2)
-        vetScore.append(score)
-        if score > ab:
-            ab = score
-            d = K
-        K += 2
-    return d,vetScore
-D = np.arange(1, 200, 2)
-K,score = idealK(X_train, y_train, X_test, y_test)
+   K = 1
+   ab = 0
+   vetScore = []
+   for i in range(200):
+       knn = KNeighborsRegressor(n_neighbors=K)
+       knn.fit(x,target)
+       score = knn.score(y,target2)
+       vetScore.append(score)
+       if score > ab:
+           ab = score
+           d = K
+       K += 2
+   return d,vetScore
+D = numpy.arange(1, 400, 2)
+K,score = idealK(x,target,y,target2)
 print("ideal K: ",K)
 plt.plot(D,score)
-score
 ```
 
-## Algoritmo K-nearest neighbors
+# Algoritmo K-nearest neighbors
 
-No reconhecimento de padrões o algoritmo KNN é um método não para-métrico usado
-para classificação e regressão. Nos dois casos, o input consiste nos k exemplos
-de treinamento mais proximos no espaço de amostragem. O output depende se o Knn
-é usado para classificação ou regressão.
-KNN é um tipo de aprendizado baseado em instâncias, onde a função é aproximada
-apenas localmente e toda a computação é deferida até a classificação.
+No reconhecimento de padrões o algoritmo KNN é um método não para-métrico usado para classificação e regressão.
+Nos dois casos, o input consiste nos k exemplos de treinamento mais proximos no espaço de amostragem. O output depende se o Knn é usado para classificação ou regressão.
+
+KNN é um tipo de aprendizado baseado em instâncias, onde a função é aproximada apenas localmente e toda a computação é deferida até a classificação.
+
 
 ```python
 def regressionKnn(x,target,y,target2):
-    knn = KNeighborsRegressor(n_neighbors=K)
+    knn = KNeighborsRegressor(n_neighbors=5)
     knn.fit(x,target)
     vetPredict = knn.predict(y)
     D = np.arange(0,100)
@@ -750,7 +742,7 @@ tree_parameters = [{'max_depth': [30, 35, 40, 50],
 
 regressor_score = search_params(DecisionTreeRegressor, tree_parameters)
 
-    
+
 # Get best parameters for Decision Tree Regressor
 
 
@@ -791,3 +783,7 @@ plt.xticks([1,2,3,4,5,6,7], [knn[0], random_forest[0], pearson[0], normalized[0]
 plt.rcParams['figure.figsize'] = 10, 10
 plt.plot()
 ```
+
+# Referencias
+Algoritmo knn: https://goo.gl/XSLTFX
+K ideal: https://kevinzakka.github.io/2016/07/13/k-nearest-neighbor/#more-on-k
