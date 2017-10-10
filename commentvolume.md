@@ -130,7 +130,7 @@ for x in os.listdir(test_dir):
 list_train = sorted(list_train)
 list_test = sorted(list_test)
 
-print("Train List: ", list_train)
+print("Train List: ", list_train, "\n")
 print("Test List: ", list_test)
 ```
 
@@ -240,8 +240,8 @@ X, Y = 0, 1
 import numpy as np
 from scipy.stats import linregress
 
-fig, (ax, ax2) = plt.subplots(1, 2)
-data = np.array([[25000,1000,10000,12000,20005, 5000, 3000, 15000, 250000, 100000 ], [5000,95,1500,1900,3700, 1200, 600, 3000, 50000, 20000]])
+fig, (ax, ax2) = plt.subplots(1, 2, figsize=[15,5])
+data = np.array([[25000,1000,10000,12000,20005, 5000, 3000, 15000, 250000, 100000], [5000,95,1500,1900,3700, 1200, 600, 3000, 50000, 20000]])
 
 ax.plot(data[X], data[Y], '.')
 
@@ -483,11 +483,12 @@ quando se faz a plotagem em relação ao dado predito e o dado real.
 max_value = max(y_test.max(), y.max(), yy.max(), yyy.max())
 min_value = min(y_test.min(), y.min(), yy.min(), yyy.min())
 
+plt.figure(figsize=[12, 7])
 plt.scatter(y_test, y, c='green', marker='o', s=70, alpha=0.7, label='Raw data')
 plt.scatter(y_test, yy, c='blue', marker='v', s=70, alpha=0.7, label='Filtered data')
 plt.scatter(y_test, yyy, c='red', marker='*', s=70, alpha=0.7, label='Normalized data')
+plt.legend(loc='upper left')
 plt.plot([min_value, max_value], [min_value, max_value], color='red', linestyle='-', linewidth=1)
-plt.rcParams['figure.figsize'] = 30, 40
 plt.tight_layout()
 plt.show()
 ```
@@ -652,10 +653,15 @@ random_forest = random_forest_regressor(X_train, y_train, X_test, y_test)
 ```
 
 # K Ideal
-Na maioria dos algoritmos de machine learning, o K no KNN é um hiperparametro que deve ser escolhido para que o melhor resultado possível possa ser encontrado em um conjunto de dados. O K pode ser interpretado como o controlador do formato do limite de decisão do algoritmo.
+Na maioria dos algoritmos de machine learning, o K no KNN é um hiperparametro
+que deve ser escolhido para que o melhor resultado possível possa ser encontrado
+em um conjunto de dados. O K pode ser interpretado como o controlador do formato
+do limite de decisão do algoritmo.
 
-Exemplificando, quando o K é pequeno, a região de uma suposta predição é restringida e força o classificador a focar menos na distribuição geral. Um valor menor de 5 fornece a combinação mais flexivel, o que vai gerar um desequilibrio menor mas uma variancia maior.
-
+Exemplificando, quando o K é pequeno, a região de uma suposta predição é
+restringida e força o classificador a focar menos na distribuição geral. Um
+valor menor de 5 fornece a combinação mais flexivel, o que vai gerar um
+desequilibrio menor mas uma variancia maior.
 
 ```python
 import numpy
@@ -681,11 +687,14 @@ plt.plot(D,score)
 
 # Algoritmo K-nearest neighbors
 
-No reconhecimento de padrões o algoritmo KNN é um método não para-métrico usado para classificação e regressão.
-Nos dois casos, o input consiste nos k exemplos de treinamento mais proximos no espaço de amostragem. O output depende se o Knn é usado para classificação ou regressão.
+No reconhecimento de padrões o algoritmo KNN é um método não para-métrico usado
+para classificação e regressão.
+Nos dois casos, o input consiste nos k exemplos de treinamento mais proximos no
+espaço de amostragem. O output depende se o Knn é usado para classificação ou
+regressão.
 
-KNN é um tipo de aprendizado baseado em instâncias, onde a função é aproximada apenas localmente e toda a computação é deferida até a classificação.
-
+KNN é um tipo de aprendizado baseado em instâncias, onde a função é aproximada
+apenas localmente e toda a computação é deferida até a classificação.
 
 ```python
 def regressionKnn(x,target,y,target2):
@@ -785,5 +794,20 @@ plt.plot()
 ```
 
 # Referencias
-Algoritmo knn: https://goo.gl/XSLTFX
+Artigo relacionado(Kamaljot Singh*, Ranjeet Kaur
+Department of Computer Science
+DAV University): http://uksim.info/uksim2015/data/8713a015.pdf
+KNN: https://goo.gl/XSLTFX
 K ideal: https://kevinzakka.github.io/2016/07/13/k-nearest-neighbor/#more-on-k
+Decision Tree Regressor: http://scikit-
+learn.org/stable/auto_examples/tree/plot_tree_regression.html#sphx-glr-auto-
+examples-tree-plot-tree-regression-py
+Random Forest Regressor: http://scikit-
+learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
+GridSearchCV: http://scikit-
+learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
+Mean Squared Error metric: http://scikit-learn.org/stable/modules/generated/skle
+arn.metrics.mean_squared_error.html#sklearn.metrics.mean_squared_error
+Overfitting intuition: https://machinelearningmastery.com/a-simple-intuition-
+for-overfitting/
+
