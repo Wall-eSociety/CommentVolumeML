@@ -686,6 +686,15 @@ plt.plot(D,score)
 score
 ```
 
+## Algoritmo K-nearest neighbors
+
+No reconhecimento de padrões o algoritmo KNN é um método não para-métrico usado
+para classificação e regressão. Nos dois casos, o input consiste nos k exemplos
+de treinamento mais proximos no espaço de amostragem. O output depende se o Knn
+é usado para classificação ou regressão.
+KNN é um tipo de aprendizado baseado em instâncias, onde a função é aproximada
+apenas localmente e toda a computação é deferida até a classificação.
+
 ```python
 def regressionKnn(x,target,y,target2):
     knn = KNeighborsRegressor(n_neighbors=K)
