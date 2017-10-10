@@ -170,7 +170,7 @@ biblioteca pandas, em que passamos o local do arquivo e o nome das colunas.
 
 ```python
 import pandas
-trainData = pandas.read_csv(list_train[4], names=columns)
+trainData = pandas.read_csv(list_train[0], names=columns)
 testData = pandas.read_csv(list_test[1], names=columns)
 print('Train file: ', list_train[4])
 print('Test file: ', list_test[0])
@@ -179,6 +179,21 @@ print(len(trainData))
 print("Quantidade de dados de teste")
 print(len(testData))
 trainData.head()
+```
+
+#### Plotando os dados
+
+Plotaremos os dados das colunas geradas pelo autor dos dados para verificar se
+há relação entre as colunas. Utilizou-se apenas uma amostragem de 5000 dados
+
+```python
+%%time
+%matplotlib notebook
+
+import matplotlib.pyplot as plt
+from pandas.plotting import scatter_matrix
+# scatter_matrix(testData.loc[:5000, 'Derived':'CC5'])
+
 ```
 
 ## Tratamento
@@ -222,7 +237,6 @@ página do facebook e Y o número de curtidas que esta página possui.
 %matplotlib inline
 X, Y = 0, 1
 
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import linregress
 
@@ -233,7 +247,6 @@ ax.plot(data[X], data[Y], '.')
 
 # Calcula regressão linear para a*m + b
 m, b, R, p, SEm = linregress(data[X], data[Y])
-m,b,R,p,SEm
 x2 = np.array([0, data[X].max()])
 ax.plot(x2, m * x2 + b)
 ax.set_title('linear')
@@ -242,7 +255,6 @@ ax.set_title('linear')
 ax2.set_title('não-linear')
 data[Y] = data[X]**(1/6)
 chart = ax2.plot(data[X], data[Y], 'o')
-
 ```
 
 Com o gráfico, fica bastante claro a correlação das variáveis X e Y do exemplo.
@@ -268,38 +280,8 @@ o grau de correlação entre as variáveis do problema.
 
 ```python
 import numpy as np
-a=trainData.corr('pearson')
-a.head()
-```
-
-##### Triangulo superior
-
-Como a matriz de correlação gerada pelo dataframe é
-uma matriz espelho. Então será removido a parte inferior da matriz
-
-```python
-a = a.abs()
-np.fill_diagonal(a.values,np.NaN)
-upper_matrix = np.triu(np.ones(a.shape)).astype(np.bool)
-
-a=a.where(upper_matrix)
-a.head()
-```
-
-##### Apenas valores válidos
-
-A matriz de correlação acima nos trás todos os
-valores de relacionamento entre cada uma das colunas, logo, desejamos saber
-apenas quais são as colunas que possuem uma forte ligação. Usaremos a correlação
-forte como sendo > X
-
-```python
-a=a.where(a>0.95)
-a=a.dropna(how='all', axis=(0,1))
-b=a[a.notnull()].stack().index
-for c in b:
-    print(c, a[c[1]][c[0]])
-
+corrData=trainData.corr('pearson')
+corrData.head()
 ```
 
 ```python
@@ -315,11 +297,42 @@ mask[np.triu_indices_from(mask)] = True
 f, ax = plt.subplots(figsize=(11, 9))
 cmap = sns.diverging_palette(220, 10, as_cmap=True)
 sns.heatmap(corr, mask=mask, cmap=cmap, vmax=.3, center=0,
-            square=True, linewidths=.5, cbar_kws={"shrink": .5},
+            square=True, linewidths=.9, cbar_kws={"shrink": .5},
             yticklabels=columns,xticklabels=columns)
 plt.yticks(rotation=0)
 plt.xticks(rotation=90)
 plt.show()
+```
+
+##### Triangulo superior
+
+Como a matriz de correlação gerada pelo dataframe é
+uma matriz espelho. Então será removido a parte inferior da matriz
+
+```python
+corrDataAbs = corrData.abs()
+np.fill_diagonal(corrDataAbs.values, np.NaN)
+upper_matrix = np.triu(np.ones(corrDataAbs.shape)).astype(np.bool)
+
+upperTriangleCorr = corrDataAbs.where(upper_matrix)
+upperTriangleCorr
+```
+
+##### Apenas valores válidos
+
+A matriz de correlação acima nos trás todos os
+valores de relacionamento entre cada uma das colunas, logo, desejamos saber
+apenas quais são as colunas que possuem uma forte ligação. Usaremos a correlação
+forte como sendo > X
+
+```python
+upperTriangleCorr = upperTriangleCorr.where(upperTriangleCorr>0.95)
+strongCorrData = upperTriangleCorr.dropna(how='all', axis=(0,1))
+b = strongCorrData[strongCorrData.notnull()].stack().index
+for c in b:
+    print(c, corrData[c[1]][c[0]])
+columnsRemove = list(map(lambda x: x[1], b))
+#     corrData.plot.scatter(x=c[1], y=c[0])
 ```
 
 ### Validação
@@ -370,6 +383,20 @@ Variação total de Y  =  \sum_{k=0}^n (Y_i - \bar{Y})^2
 Variação total de Y  =  \sum_{k=0}^n (Y_i - F_i)^2
 \end{equation*}
 
+#### Média quadrática do erro
+
+A [média quadrática do erro](http://www.statisticshowto.com/mean-squared-error/)
+é uma métrica para modelos de regressão que indica o quanto os pontos estão se
+distânciando da reta traçada. A distância é a medida de **erro** da linha e o
+quadrado é útil para obter os valores positivos e amplifica (adiciona maior
+peso) para quando o ponto se distância bastante.
+
+Nesta seção, ele será utilizado para determinar o quanto o modelo de regressão
+melhorou ou piorou após aplicar a remoção das colunas que possuem forte
+correlação.
+
+#### Dados originais
+
 ```python
 %%time
 from sklearn.model_selection import train_test_split
@@ -384,60 +411,31 @@ regressor = DecisionTreeRegressor()
 
 regressor.fit(X, Y)
 y = regressor.predict(x_test)
-
-score = cross_val_score(regressor, X, Y, scoring='neg_mean_squared_error', cv = 10)
-print(score)
+raw = ('Raw decision tree', regressor.score(x_test, y_test))
+score = cross_val_score(regressor, X, Y, scoring='neg_mean_squared_error', cv=10)
+print(regressor.score(X, Y), regressor.score(x_test, y_test))
 ```
 
-```python
-%%time
-from sklearn.model_selection import GridSearchCV
+#### Pearson correlation
 
-tree_parameters = [{'max_depth': [30, 35, 40],
-                    'max_features': [40, 46, 52],
-                    'min_samples_leaf': [25, 30, 35]}]
-# BEST SCORE: 469.696918012 {'min_samples_leaf': 30, 'max_depth': 35, 'max_features': 46}
-
-# Get best parameters for Decision Tree Regressor
-grid_search = GridSearchCV(estimator= regressor,
-                          param_grid = tree_parameters,
-                          scoring = 'neg_mean_squared_error',
-                          cv = 10,
-                          n_jobs = -1)
-
-grid_search = grid_search.fit(X_train, y_train)
-print(grid_search.best_score_ * -1, grid_search.best_params_)
-```
-
-#### Média quadrática do erro
-
-A [média quadrática do erro](http://www.statisticshowto.com/mean-squared-error/)
-é uma métrica para modelos de regressão que indica o quanto os pontos estão se
-distânciando da reta traçada. A distância é a medida de **erro** da linha e o
-quadrado é útil para obter os valores positivos e amplifica (adiciona maior
-peso) para quando o ponto se distância bastante.
-
-Nesta seção, ele será utilizado para determinar o quanto o modelo de regressão
-melhorou ou piorou após aplicar a remoção das colunas que possuem forte
-correlação.
+Agora, após rodar o modelo de [Árvore de regressão](#Decision-Tree-Regression),
+iremos retirar as features que possuem uma forte correlação linear e verificar o
+score novamente para ver se a performance é melhorada ou não.
 
 ```python
 %%time
 
 filteredData = pandas.read_csv(list_train[2], names=columns)
 
-drop_columns = ['Target Variable', 'Derived.15', 'Derived.16', 'Derived.3', 'Derived.7',
-                'Derived.12', 'Derived.17', 'Derived.18', 'Derived.19', 'Derived.24',
-                'Derived.21', 'Derived.20', 'CC4']
-
-YY, XX = filteredData.loc[:, 'Target Variable'], filteredData.drop(drop_columns, 1)
-y_test, x_test = testData.loc[:, 'Target Variable'], testData.drop(drop_columns, 1)
+YY, XX = filteredData.loc[:, 'Target Variable'], filteredData.drop(columnsRemove, 1)
+y_test, x_test = testData.loc[:, 'Target Variable'], testData.drop(columnsRemove, 1)
 
 regressor = DecisionTreeRegressor()
 
 filteredScore = cross_val_score(regressor, XX, YY, scoring='neg_mean_squared_error')
 regressor.fit(XX,YY)
 yy = regressor.predict(x_test)
+pearson = ('Pearson decision tree', regressor.score(x_test, y_test))
 print(regressor.score(XX, YY), regressor.score(x_test, y_test))
 ```
 
@@ -447,7 +445,6 @@ Normalize samples individually to unit norm.
 Each sample (i.e. each row of the data matrix) with at least one non zero
 component is rescaled independently of other samples so that its norm (l1 or l2)
 equals one.
-
 
 ```python
 %%time
@@ -460,6 +457,7 @@ regressor = DecisionTreeRegressor()
 normalizedScore = cross_val_score(regressor, XXX, YYY, scoring='neg_mean_squared_error')
 regressor.fit(XXX, YYY)
 yyy = regressor.predict(x_test)
+normalized = ('Normalized decision tree', regressor.score(x_test, y_test))
 print(regressor.score(XXX, YYY), regressor.score(x_test, y_test))
 ```
 
@@ -483,11 +481,12 @@ quando se faz a plotagem em relação ao dado predito e o dado real.
 ```python
 max_value = max(y_test.max(), y.max(), yy.max(), yyy.max())
 min_value = min(y_test.min(), y.min(), yy.min(), yyy.min())
-plt.scatter(y_test, y, c='green', marker='o', s=10, alpha=0.8, label='Test with Trained Data')
-plt.scatter(y_test, yy, c='blue', marker='v', s=10, alpha=0.8, label='Filtered data')
-plt.scatter(y_test, yyy, c='red', marker='*', s=10, alpha=0.8, label='Filtered data')
-plt.plot([min_value, max_value], [min_value, max_value], color='red', linestyle='-', linewidth=2)
 
+plt.scatter(y_test, y, c='green', marker='o', s=70, alpha=0.7, label='Raw data')
+plt.scatter(y_test, yy, c='blue', marker='v', s=70, alpha=0.7, label='Filtered data')
+plt.scatter(y_test, yyy, c='red', marker='*', s=70, alpha=0.7, label='Normalized data')
+plt.plot([min_value, max_value], [min_value, max_value], color='red', linestyle='-', linewidth=1)
+plt.rcParams['figure.figsize'] = 30, 40
 plt.tight_layout()
 plt.show()
 ```
@@ -606,6 +605,7 @@ from sklearn.tree import DecisionTreeRegressor
 def decision_tree_regressor(X_train, y_train, X_test, y_test):
     print("Runnning Regression Decision Tree...")
 
+    # Runing with best params
     regressor = DecisionTreeRegressor(min_samples_leaf=30, max_depth= 35, max_features= 42)
     regressor.fit(X_train, y_train)
 
@@ -616,7 +616,7 @@ def decision_tree_regressor(X_train, y_train, X_test, y_test):
 
     print("R² Score, on Training set: %.3f, on Testing set: %.3f" % (r2_score(y_train, y_train_pred), r2_score(y_test, y_test_pred)))
     print("Mean Squared Error Score on Testing set: %.2f" % (mean_squared_error(y_test, y_test_pred)))
-
+    
 decision_tree_regressor(X_train, y_train, X_test, y_test)
 ```
 
@@ -646,33 +646,30 @@ def random_forest_regressor(X_train, y_train, X_test, y_test):
 
     print("R² Score, on Training set: %.3f, on Testing set: %.3f" % (r2_score(y_train, y_train_pred), r2_score(y_test, y_test_pred)))
     print("Mean Squared Error Score on Testing set: %.2f" % (mean_squared_error(y_test, y_test_pred)))
-
-random_forest_regressor(X_train, y_train, X_test, y_test)
+    return ('Random forest best params', regressor.score(X_test, y_test))
+random_forest = random_forest_regressor(X_train, y_train, X_test, y_test)
 ```
 
 ## Algoritmo K-nearest neighbors
 
-No reconhecimento de padrões o algoritmo KNN é um método não para-métrico usado para classificação e regressão. Nos dois casos, o input consiste nos k exemplos de treinamento mais proximos no espaço de amostragem. O output depende se o Knn é usado para classificação ou regressão.
-KNN é um tipo de aprendizado baseado em instâncias, onde a função é aproximada apenas localmente e toda a computação é deferida até a classificação.
+No reconhecimento de padrões o algoritmo KNN é um método não para-métrico usado
+para classificação e regressão. Nos dois casos, o input consiste nos k exemplos
+de treinamento mais proximos no espaço de amostragem. O output depende se o Knn
+é usado para classificação ou regressão.
+KNN é um tipo de aprendizado baseado em instâncias, onde a função é aproximada
+apenas localmente e toda a computação é deferida até a classificação.
 
 ```python
-import pandas as pd
-import numpy
-
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.model_selection import train_test_split
 
 import math
-%matplotlib inline
-import matplotlib.pyplot as plt
-```
 
-```python
 def idealK(x,target,y,target2):
     K = 1
     ab = 0
     vetScore = []
-    for i in range(200):
+    for i in range(100):
         knn = KNeighborsRegressor(n_neighbors=K)
         knn.fit(x,target)
         score = knn.score(y,target2)
@@ -682,21 +679,101 @@ def idealK(x,target,y,target2):
             d = K
         K += 2
     return d,vetScore
-D = numpy.arange(1, 400, 2)
+D = np.arange(1, 200, 2)
 K,score = idealK(X_train, y_train, X_test, y_test)
 print("ideal K: ",K)
 plt.plot(D,score)
+score
 ```
 
 ```python
 def regressionKnn(x,target,y,target2):
-    knn = KNeighborsRegressor(n_neighbors=5)
+    knn = KNeighborsRegressor(n_neighbors=K)
     knn.fit(x,target)
-    vetPredict = knn.predict(y)  
-    D = numpy.arange(0,81312)
+    vetPredict = knn.predict(y)
+    D = np.arange(0,100)
     P = list(target2)
-    plt.plot(D,p)
-    plt.plot(D,vetPredict)
+    plt.scatter(P, vetPredict)
+    return ('Knn', knn.score(y, target2))
 
-regressionKnn(X_train, y_train, X_test, y_test)
+knn = regressionKnn(X_train, y_train, X_test, y_test)
+```
+
+# Otimização
+
+Tentaremos fazer a otimização do modelo de árvore de decisão por ter sido o
+modelo com o melhor score, com esta otimização, espera-se aumentar o valor do
+score R².
+
+## Escolha
+
+Será feita a escolha com base no modelo que apresentar melhor performance com a
+otimização dos parametros livres, entre random forest e decision tree.
+
+```python
+from sklearn.model_selection import GridSearchCV
+
+def search_params(regressor_class, paramns):
+    regressor = regressor_class()
+    grid_search = GridSearchCV(estimator=regressor,
+                              param_grid=tree_parameters,
+#                           scoring='neg_mean_squared_error',
+                              cv = 10,
+                              n_jobs=-1)
+    grid_search = grid_search.fit(X_train, y_train)
+    print(grid_search.best_score_ * -1, grid_search.best_params_)
+    return grid_search.best_score_
+```
+
+```python
+%%time
+
+random_parameters = [{'max_depth': [30, 35, 40, 50],
+                    'max_features': [40, 46, 53],
+                    'min_samples_leaf': [25, 30, 35]}]
+
+# BEST SCORE: 469.696918012 {'min_samples_leaf': 30, 'max_depth': 35, 'max_features': 46}
+
+regressor_score = search_params(DecisionTreeRegressor, tree_parameters)
+
+    
+# Get best parameters for Decision Tree Regressor
+
+
+decision_tree = ('Decision tree best parans', regressor_score)
+```
+
+```python
+%%time
+
+random_parameters = [{'max_depth': [30, 35, 40, 50],
+                    'max_features': [40, 46, 53],
+                    'min_samples_leaf': [25, 30, 35]}]
+
+regressor_score = search_params(RandomForestRegressor, random_parameters)
+
+random_forest_best = ('Random Forest best parans', regressor_score) # grid_search.best_score_)
+```
+
+# Resultados
+
+Os resultados finais dos modelos estão armazenados nas variáveis:
+
+* knn - Knn model
+* random_forest - Random forest default
+* pearson - Remove columns from decision tree data
+* normalized - Apply normalization to data run in decision tree
+* raw - Raw data in decision tree (base score)
+* decision_tree - Decision tree model with best params
+* random_forest_best - Random forest with best params
+
+E serão exibidos os resultados abaixo
+
+```python
+print(knn, random_forest, pearson, normalized, raw, decision_tree, random_forest_best)
+plt.bar([1,2,3,4,5,6,7], [knn[1], random_forest[1], pearson[1], normalized[1], raw[1], decision_tree[1], random_forest_best[1]])
+plt.xticks([1,2,3,4,5,6,7], [knn[0], random_forest[0], pearson[0], normalized[0], raw[0], decision_tree[0], random_forest_best[0]], rotation=90)
+
+plt.rcParams['figure.figsize'] = 10, 10
+plt.plot()
 ```
