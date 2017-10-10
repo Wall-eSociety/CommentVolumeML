@@ -666,19 +666,19 @@ desequilibrio menor mas uma variancia maior.
 ```python
 import numpy
 def idealK(x,target,y,target2):
-   K = 1
-   ab = 0
-   vetScore = []
-   for i in range(200):
-       knn = KNeighborsRegressor(n_neighbors=K)
-       knn.fit(x,target)
-       score = knn.score(y,target2)
-       vetScore.append(score)
-       if score > ab:
-           ab = score
-           d = K
-       K += 2
-   return d,vetScore
+    K = 1
+    ab = 0
+    vetScore = []
+    for i in range(200):
+        knn = KNeighborsRegressor(n_neighbors=K)
+        knn.fit(x,target)
+        score = knn.score(y,target2)
+        vetScore.append(score)
+        if score > ab:
+            ab = score
+            d = K
+        K += 2
+    return d,vetScore
 D = numpy.arange(1, 400, 2)
 K,score = idealK(x,target,y,target2)
 print("ideal K: ",K)
@@ -700,18 +700,8 @@ apenas localmente e toda a computação é deferida até a classificação.
 def regressionKnn(x,target,y,target2):
     knn = KNeighborsRegressor(n_neighbors=5)
     knn.fit(x,target)
-    vetPredict = knn.predict(y)
-    D = np.arange(0,100)
-    P = list(target2)
-    plt.figure(figsize=(15, 5))
-    plt.scatter(P, vetPredict)
-    plt.ylim(-50, 450)
-    plt.xlim(-50, 900)
-    plt.plot()
-    plt.show()
-    return ('Knn', knn.score(y, target2))
-
-knn = regressionKnn(X_train, y_train, X_test, y_test)
+    vetPredict = knn.predict(y)   
+regressionKnn(x,target,y,target2)
 ```
 
 # Otimização
