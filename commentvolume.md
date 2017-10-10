@@ -95,7 +95,7 @@ encontram os arquivos. Para isso usaremos o import os (ou Operating system) e
 como a extenção dos arquivos é .csv, será utilizada a biblioteca
 [pandas](http://pandas.pydata.org/).
 
-```python
+```{.python .input}
 import os
 # Load dirs name
 cur_dir = os.path.realpath('.')
@@ -114,7 +114,7 @@ os arquivos do tipo csv para teste e treinamento. Ao final iremos ordenar a
 lista para podemos acessar o arquivos que queremos pelo indice, ja que não
 necessáriamente ele vai ler em ordem alfabetica.
 
-```python
+```{.python .input}
 list_train = []
 list_test = []
 # Obtain train files
@@ -148,7 +148,7 @@ Portanto, é esperado que, caso o pandas leia corretamente, tenham
 40949
 registros em 54 colunas.
 
-```python
+```{.python .input}
 columns = ["Page Popularity/likes", "Page Checkinsâ€™s", "Page talking about",
            "Page Category", "Derived", "Derived", "Derived", "Derived",
            "Derived", "Derived", "Derived", "Derived", "Derived",
@@ -168,7 +168,7 @@ print(len(columns), columns)
 Agora, faremos a leitura dos dados com o suporte da
 biblioteca pandas, em que passamos o local do arquivo e o nome das colunas.
 
-```python
+```{.python .input}
 import pandas
 trainData = pandas.read_csv(list_train[0], names=columns)
 testData = pandas.read_csv(list_test[1], names=columns)
@@ -186,7 +186,7 @@ trainData.head()
 Plotaremos os dados das colunas geradas pelo autor dos dados para verificar se
 há relação entre as colunas. Utilizou-se apenas uma amostragem de 5000 dados
 
-```python
+```{.python .input}
 %%time
 %matplotlib notebook
 
@@ -233,7 +233,7 @@ página do facebook e Y o número de curtidas que esta página possui.
 |3000|600|
 |15000|3000|
 
-```python
+```{.python .input}
 %matplotlib inline
 X, Y = 0, 1
 
@@ -278,13 +278,13 @@ Spearman avalia relações monótonas, sejam elas lineares ou não.
 Para nosso problema utilizaremos o método de pearson, pois queremos medir apenas
 o grau de correlação entre as variáveis do problema.
 
-```python
+```{.python .input}
 import numpy as np
 corrData=trainData.corr('pearson')
 corrData.head()
 ```
 
-```python
+```{.python .input}
 %matplotlib inline
 import matplotlib.pyplot as plt
 from matplotlib import cm as cm
@@ -309,7 +309,7 @@ plt.show()
 Como a matriz de correlação gerada pelo dataframe é
 uma matriz espelho. Então será removido a parte inferior da matriz
 
-```python
+```{.python .input}
 corrDataAbs = corrData.abs()
 np.fill_diagonal(corrDataAbs.values, np.NaN)
 upper_matrix = np.triu(np.ones(corrDataAbs.shape)).astype(np.bool)
@@ -325,7 +325,7 @@ valores de relacionamento entre cada uma das colunas, logo, desejamos saber
 apenas quais são as colunas que possuem uma forte ligação. Usaremos a correlação
 forte como sendo > X
 
-```python
+```{.python .input}
 upperTriangleCorr = upperTriangleCorr.where(upperTriangleCorr>0.95)
 strongCorrData = upperTriangleCorr.dropna(how='all', axis=(0,1))
 b = strongCorrData[strongCorrData.notnull()].stack().index
@@ -398,7 +398,7 @@ correlação.
 
 #### Dados originais
 
-```python
+```{.python .input}
 %%time
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
@@ -423,7 +423,7 @@ Agora, após rodar o modelo de [Árvore de regressão](#Decision-Tree-Regression
 iremos retirar as features que possuem uma forte correlação linear e verificar o
 score novamente para ver se a performance é melhorada ou não.
 
-```python
+```{.python .input}
 %%time
 
 filteredData = pandas.read_csv(list_train[2], names=columns)
@@ -447,7 +447,7 @@ Each sample (i.e. each row of the data matrix) with at least one non zero
 component is rescaled independently of other samples so that its norm (l1 or l2)
 equals one.
 
-```python
+```{.python .input}
 %%time
 from sklearn.preprocessing import Normalizer
 
@@ -468,7 +468,7 @@ Obervou-se que com a remoção das colunas dependentes, não houve grandes
 melhorias na performance do modelo Regression tree. A seguir é apresentada uma
 métrica diferente para esta análise o mean squared error.
 
-```python
+```{.python .input}
 main_score = "Score: {} +- {}".format(score.mean(), score.std())
 main_filtered = "Score: {} +- {}".format(filteredScore.mean(), filteredScore.std())
 main_normalized = "Score: {} +- {}".format(normalizedScore.mean(), normalizedScore.std())
@@ -479,7 +479,7 @@ main_score, main_filtered, main_normalized
 Na plotagem do gráfico a baixo, é visível que não se concretizou uma linha
 quando se faz a plotagem em relação ao dado predito e o dado real.
 
-```python
+```{.python .input}
 max_value = max(y_test.max(), y.max(), yy.max(), yyy.max())
 min_value = min(y_test.min(), y.min(), yy.min(), yyy.min())
 
@@ -531,7 +531,7 @@ validar o resultado da métrica anterior.
 
 Tratamento para a base de testes e treino.
 
-```python
+```{.python .input}
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
 
@@ -545,7 +545,7 @@ y_test = testData.iloc[:, -1].values
 print("X values and Y values ready for training and testing!!!")
 ```
 
-```python
+```{.python .input}
 %%time
 def plot_graphs(y_train, y_train_pred, y_test, y_test_pred):
     xy_min = 0
@@ -600,7 +600,7 @@ da árvore. sendo esse encontrardo neste [link](http://scikit-learn.org/stable/m
 dules/generated/sklearn.tree.DecisionTreeRegressor.html#sklearn.tree.DecisionTre
 eRegressor)
 
-```python
+```{.python .input}
 %%time
 from sklearn.tree import DecisionTreeRegressor
 
@@ -630,7 +630,7 @@ melhorar a precisão preditiva e controlar a sobreposição.
 
 O modelo tem como parâmetro livre a seleção da quantidade de árvores de decisão.
 
-```python
+```{.python .input}
 %%time
 from sklearn.ensemble import RandomForestRegressor
 
@@ -663,7 +663,7 @@ restringida e força o classificador a focar menos na distribuição geral. Um
 valor menor de 5 fornece a combinação mais flexivel, o que vai gerar um
 desequilibrio menor mas uma variancia maior.
 
-```python
+```{.python .input}
 import numpy
 def idealK(x,target,y,target2):
     K = 1
@@ -696,7 +696,7 @@ regressão.
 KNN é um tipo de aprendizado baseado em instâncias, onde a função é aproximada
 apenas localmente e toda a computação é deferida até a classificação.
 
-```python
+```{.python .input}
 def regressionKnn(x,target,y,target2):
     knn = KNeighborsRegressor(n_neighbors=5)
     knn.fit(x,target)
@@ -715,7 +715,7 @@ score R².
 Será feita a escolha com base no modelo que apresentar melhor performance com a
 otimização dos parametros livres, entre random forest e decision tree.
 
-```python
+```{.python .input}
 from sklearn.model_selection import GridSearchCV
 
 def search_params(regressor_class, tree_parameters):
@@ -730,7 +730,7 @@ def search_params(regressor_class, tree_parameters):
     return grid_search.best_score_
 ```
 
-```python
+```{.python .input}
 %%time
 
 tree_parameters = [{'max_depth': [30, 35, 40, 50],
@@ -748,7 +748,7 @@ regressor_score = search_params(DecisionTreeRegressor, tree_parameters)
 decision_tree = ('Decision tree best parameters', regressor_score)
 ```
 
-```python
+```{.python .input}
 %%time
 
 random_parameters = [{'max_depth': [30, 35, 40, 50],
@@ -774,7 +774,7 @@ Os resultados finais dos modelos estão armazenados nas variáveis:
 
 E serão exibidos os resultados abaixo
 
-```python
+```{.python .input}
 print(knn, random_forest, pearson, normalized, raw, decision_tree, random_forest_best)
 plt.bar([1,2,3,4,5,6,7], [knn[1], random_forest[1], pearson[1], normalized[1], raw[1], decision_tree[1], random_forest_best[1]])
 plt.xticks([1,2,3,4,5,6,7], [knn[0], random_forest[0], pearson[0], normalized[0], raw[0], decision_tree[0], random_forest_best[0]], rotation=90)
@@ -800,4 +800,3 @@ Mean Squared Error metric: http://scikit-learn.org/stable/modules/generated/skle
 arn.metrics.mean_squared_error.html#sklearn.metrics.mean_squared_error
 Overfitting intuition: https://machinelearningmastery.com/a-simple-intuition-
 for-overfitting/
-
