@@ -770,9 +770,22 @@ plt.xticks([1,2,3,4,5,6,7], [knn[0], random_forest[0], pearson[0], normalized[0]
 
 plt.rcParams['figure.figsize'] = 10, 10
 plt.plot()
->>>>>>> 68d36f8eb43f991f658da6abc129fc90889c2797
 ```
 
 # Referencias
-Algoritmo knn: https://goo.gl/XSLTFX
+Artigo relacionado(Kamaljot Singh*, Ranjeet Kaur
+Department of Computer Science
+DAV University): http://uksim.info/uksim2015/data/8713a015.pdf
+KNN: https://goo.gl/XSLTFX
 K ideal: https://kevinzakka.github.io/2016/07/13/k-nearest-neighbor/#more-on-k
+Decision Tree Regressor: http://scikit-
+learn.org/stable/auto_examples/tree/plot_tree_regression.html#sphx-glr-auto-
+examples-tree-plot-tree-regression-py
+Random Forest Regressor: http://scikit-
+learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
+GridSearchCV: http://scikit-
+learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
+Mean Squared Error metric: http://scikit-learn.org/stable/modules/generated/skle
+arn.metrics.mean_squared_error.html#sklearn.metrics.mean_squared_error
+Overfitting intuition: https://machinelearningmastery.com/a-simple-intuition-
+for-overfitting/
