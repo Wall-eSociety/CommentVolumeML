@@ -170,9 +170,9 @@ biblioteca pandas, em que passamos o local do arquivo e o nome das colunas.
 
 ```python
 import pandas
-trainData = pandas.read_csv(list_train[0], names=columns)
-testData = pandas.read_csv(list_test[0], names=columns)
-print('Train file: ', list_train[0])
+trainData = pandas.read_csv(list_train[4], names=columns)
+testData = pandas.read_csv(list_test[1], names=columns)
+print('Train file: ', list_train[4])
 print('Test file: ', list_test[0])
 print("Quantidade de dados de treinamento")
 print(len(trainData))
@@ -378,15 +378,35 @@ from sklearn.tree import DecisionTreeRegressor
 
 
 y_test, x_test = testData.loc[:, 'Target Variable'], testData.drop('Target Variable', 1)
-Y, X = trainData.loc[:, 'Target Variable'], trainData.drop('Target Variable', 1) 
+Y, X = trainData.loc[:, 'Target Variable'], trainData.drop('Target Variable', 1)
 
 regressor = DecisionTreeRegressor()
 
 regressor.fit(X, Y)
 y = regressor.predict(x_test)
 
-score = cross_val_score(regressor, X, Y, scoring='neg_mean_squared_error')
-print(regressor.score(X, Y), regressor.score(x_test, y_test))
+score = cross_val_score(regressor, X, Y, scoring='neg_mean_squared_error', cv = 10)
+print(score)
+```
+
+```python
+%%time
+from sklearn.model_selection import GridSearchCV
+
+tree_parameters = [{'max_depth': [30, 35, 40],
+                    'max_features': [40, 46, 52],
+                    'min_samples_leaf': [25, 30, 35]}]
+# BEST SCORE: 469.696918012 {'min_samples_leaf': 30, 'max_depth': 35, 'max_features': 46}
+
+# Get best parameters for Decision Tree Regressor
+grid_search = GridSearchCV(estimator= regressor,
+                          param_grid = tree_parameters,
+                          scoring = 'neg_mean_squared_error',
+                          cv = 10,
+                          n_jobs = -1)
+
+grid_search = grid_search.fit(X_train, y_train)
+print(grid_search.best_score_ * -1, grid_search.best_params_)
 ```
 
 #### Média quadrática do erro
@@ -491,12 +511,26 @@ Os modelos selecionados para testes neste problema foram:
 * Random Forest
 * KNM
 
+Para avaliação dos modelo, foi coletado o valor da pontuação do mesmo utilizando
+duas métricas comrparativas, para validar a seleção do modelos com relação a sua
+performance sobre a base de dados:
+* [R2](http://scikit-
+learn.org/stable/modules/generated/sklearn.metrics.r2_score.html), métrica na
+qual é mais uma é utilizada para determinar a pontuação de um modelo de
+regressão, seu melhor resultado é dado pela nota "1" e podendo ser negativ, pois
+o modelo pode ser arbitrariamente pior.
+* [MSE](http://scikit-learn.org/stable/modules/model_evaluation.html#median-
+absolute-error), métrica utilizada para para avaliar o modelo sendo o valor
+esperado da perda de erro ao quadrado ou perda quadrática. A diferença ocorre
+devido à aleatoriedade ou porque o estimador não contabiliza informações que
+possam produzir uma estimativa mais precisa, sendo necessário no caso para
+validar o resultado da métrica anterior.
+
 ## Tratamento da Base de dados
 
 Tratamento para a base de testes e treino.
 
 ```python
-import time
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
 
@@ -511,18 +545,19 @@ print("X values and Y values ready for training and testing!!!")
 ```
 
 ```python
+%%time
 def plot_graphs(y_train, y_train_pred, y_test, y_test_pred):
     xy_min = 0
     xy_max = 1500
 
     f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=(15, 5))
-    
+
     ax1.scatter(y_train, y_train_pred, c='blue', marker='o', s=50, alpha=0.7, label='Test with Trained Data')
     ax1.set_title('Prediction on Train set')
     ax1.set_xlim([xy_min, xy_max])
     ax1.set_ylim([xy_min, xy_max])
     ax1.plot([xy_min, xy_max], [xy_min, xy_max], color='red', linestyle='-', linewidth=2)
-    
+
     ax2.scatter(y_test, y_test_pred, c='darkorange', marker='o', s=50, alpha=0.8, label='Test with Test Data')
     ax2.set_title('Prediction on Test set')
     ax2.set_xlim([xy_min, xy_max])
@@ -530,7 +565,7 @@ def plot_graphs(y_train, y_train_pred, y_test, y_test_pred):
     ax2.plot([xy_min, xy_max], [xy_min, xy_max], color='red', linestyle='-', linewidth=2)
     plt.tight_layout()
     plt.show()
-    
+
     plt.figure(figsize=(15, 5))
     plt.scatter(y_train_pred, y_train - y_train_pred, c='black', marker='o', s=75, alpha=0.7, label='Training data')
     plt.scatter(y_test_pred, y_test - y_test_pred, c='lightgreen', marker='s', s=75, alpha=0.7, label='Test data')
@@ -543,6 +578,14 @@ def plot_graphs(y_train, y_train_pred, y_test, y_test_pred):
     plt.tight_layout()
     plt.show()
 ```
+
+## Representação gráfica
+
+Para reO gráfico demonstra os testes do modelo utilizando as bases distintas do
+nosso dataset, sendo os testes na base de treino, gŕafico à esquerda e os testes
+na base de teste, gráfico a direita. Abaixo temos a representação dos testes no
+modelo, onde é representado os dados residuais, nos quais alguns dos valores
+ficaram distantes a função do modelo.
 
 ## Decision Tree Regression
 
@@ -557,24 +600,23 @@ dules/generated/sklearn.tree.DecisionTreeRegressor.html#sklearn.tree.DecisionTre
 eRegressor)
 
 ```python
+%%time
 from sklearn.tree import DecisionTreeRegressor
 
 def decision_tree_regressor(X_train, y_train, X_test, y_test):
-    t0 = time.time()
     print("Runnning Regression Decision Tree...")
 
-    regressor = DecisionTreeRegressor(max_depth=100)
+    regressor = DecisionTreeRegressor(min_samples_leaf=30, max_depth= 35, max_features= 42)
     regressor.fit(X_train, y_train)
-    
+
     y_train_pred = regressor.predict(X_train)
     y_test_pred = regressor.predict(X_test)
-    
+
     plot_graphs(y_train, y_train_pred, y_test, y_test_pred)
-    
+
     print("R² Score, on Training set: %.3f, on Testing set: %.3f" % (r2_score(y_train, y_train_pred), r2_score(y_test, y_test_pred)))
     print("Mean Squared Error Score on Testing set: %.2f" % (mean_squared_error(y_test, y_test_pred)))
-    print("It took %.2f" % (time.time() - t0), "seconds to run Decision Tree Regression")
-    
+
 decision_tree_regressor(X_train, y_train, X_test, y_test)
 ```
 
@@ -587,25 +629,24 @@ melhorar a precisão preditiva e controlar a sobreposição.
 O modelo tem como parâmetro livre a seleção da quantidade de árvores de decisão.
 
 ```python
+%%time
 from sklearn.ensemble import RandomForestRegressor
 
 def random_forest_regressor(X_train, y_train, X_test, y_test):
-    t0 = time.time()
-    n_trees = 20
+    n_trees = 50
     print("Runnning Random Forest with",n_trees,"Trees...")
-    
-    regressor = RandomForestRegressor(n_estimators=n_trees, random_state=1, n_jobs=-1)
+
+    regressor = RandomForestRegressor(n_estimators=n_trees, min_samples_leaf=30, max_depth= 35, max_features= 42, n_jobs=-1)
     regressor.fit(X_train, y_train)
-    
+
     y_train_pred = regressor.predict(X_train)
     y_test_pred = regressor.predict(X_test)   
-    
+
     plot_graphs(y_train, y_train_pred, y_test, y_test_pred)
-    
+
     print("R² Score, on Training set: %.3f, on Testing set: %.3f" % (r2_score(y_train, y_train_pred), r2_score(y_test, y_test_pred)))
     print("Mean Squared Error Score on Testing set: %.2f" % (mean_squared_error(y_test, y_test_pred)))
-    print("It took %.2f" % (time.time() - t0), "seconds to run Random Forest Regression with", n_trees, "trees")
-    
+
 random_forest_regressor(X_train, y_train, X_test, y_test)
 ```
 
@@ -617,7 +658,7 @@ import numpy
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.model_selection import train_test_split
 
-import math 
+import math
 %matplotlib inline
 import matplotlib.pyplot as plt
 ```
@@ -657,6 +698,6 @@ def regressionKnn(x,target,y,target2):
     P = list(target2)
     plt.plot(D,p)
     plt.plot(D,vetPredict)
-    
+
 regressionKnn(X_train, y_train, X_test, y_test)
 ```
