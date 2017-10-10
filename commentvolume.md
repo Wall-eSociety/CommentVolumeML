@@ -606,7 +606,7 @@ def decision_tree_regressor(X_train, y_train, X_test, y_test):
     print("Runnning Regression Decision Tree...")
 
     # Runing with best params
-    regressor = DecisionTreeRegressor(min_samples_leaf=30, max_depth= 35, max_features= 42)
+    regressor = DecisionTreeRegressor(min_samples_leaf=30, max_depth= 35, max_features= 46)
     regressor.fit(X_train, y_train)
 
     y_train_pred = regressor.predict(X_train)
@@ -636,7 +636,7 @@ def random_forest_regressor(X_train, y_train, X_test, y_test):
     n_trees = 50
     print("Runnning Random Forest with",n_trees,"Trees...")
 
-    regressor = RandomForestRegressor(n_estimators=n_trees, min_samples_leaf=30, max_depth= 35, max_features= 42, n_jobs=-1)
+    regressor = RandomForestRegressor(n_estimators=n_trees, min_samples_leaf=30, max_depth= 35, max_features= 46, n_jobs=-1)
     regressor.fit(X_train, y_train)
 
     y_train_pred = regressor.predict(X_train)
@@ -702,7 +702,12 @@ def regressionKnn(x,target,y,target2):
     vetPredict = knn.predict(y)
     D = np.arange(0,100)
     P = list(target2)
+    plt.figure(figsize=(15, 5))
     plt.scatter(P, vetPredict)
+    plt.ylim(-50, 450)
+    plt.xlim(-50, 900)
+    plt.plot()
+    plt.show()
     return ('Knn', knn.score(y, target2))
 
 knn = regressionKnn(X_train, y_train, X_test, y_test)
@@ -722,7 +727,7 @@ otimização dos parametros livres, entre random forest e decision tree.
 ```python
 from sklearn.model_selection import GridSearchCV
 
-def search_params(regressor_class, paramns):
+def search_params(regressor_class, tree_parameters):
     regressor = regressor_class()
     grid_search = GridSearchCV(estimator=regressor,
                               param_grid=tree_parameters,
@@ -737,7 +742,7 @@ def search_params(regressor_class, paramns):
 ```python
 %%time
 
-random_parameters = [{'max_depth': [30, 35, 40, 50],
+tree_parameters = [{'max_depth': [30, 35, 40, 50],
                     'max_features': [40, 46, 53],
                     'min_samples_leaf': [25, 30, 35]}]
 
@@ -749,7 +754,7 @@ regressor_score = search_params(DecisionTreeRegressor, tree_parameters)
 # Get best parameters for Decision Tree Regressor
 
 
-decision_tree = ('Decision tree best parans', regressor_score)
+decision_tree = ('Decision tree best parameters', regressor_score)
 ```
 
 ```python
@@ -761,7 +766,7 @@ random_parameters = [{'max_depth': [30, 35, 40, 50],
 
 regressor_score = search_params(RandomForestRegressor, random_parameters)
 
-random_forest_best = ('Random Forest best parans', regressor_score) # grid_search.best_score_)
+random_forest_best = ('Random Forest best parameters', regressor_score) # grid_search.best_score_)
 ```
 
 # Resultados
